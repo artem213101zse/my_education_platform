@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
+        <div class="container">
+
+            <a class="navbar-brand" href="#">
+      <img src="https://sun9-60.userapi.com/impg/Ns_omxpGuuPbjOfBnJb5MZ2ixkkrf9WFiSwxNw/2mSxWrj1TQs.jpg?size=1920x1920&quality=95&sign=7b3f54a9674e8fd883de8f33416c7782&type=album" alt="Bootstrap" width="40" height="34">
+    </a>
+          <a class="navbar-brand" href="{% url 'course_list' %}">KOTSI Education Platform</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarsExample07">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                {% if user.is_authenticated %}
+                <a href="{% url 'quiz_results' %}" class="btn btn-secondary rounded-pill mx-1">Результаты тестов</a>
+                {% endif %}
+                <li class="nav-item">
+                  {% if user.is_authenticated and user.userprofile.is_teacher %}
+                    <a href="{% url 'create_course' %}" class="btn btn-success rounded-pill mx-1">Создать курс</a>
+                {% endif %}
+                </li>
+
+
+            </ul>
+            <ul class="nav">
+                <li class="nav-item">
+                 <form method="get" action="{% url 'course_list' %}" role="search">
+                    <div class="input-group ">
+                        <input type="form-control" name="q" class="form-control" placeholder="Искать курс...">
+                        <button type="submit" class="btn btn-primary">Поиск</button>
+
+                    </div>
+                </form>
+
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger rounded-pill mx-2">Выйти из системы</button>
+                    </form>
+                {% else %}
+
+                  <a href="{% url 'login' %}" class="btn btn-success rounded-pill mx-1">Войти</a>
+
+
+
+                    <a href="{% url 'signup' %}" class="btn btn-info rounded-pill px-3">Регистрация</a>
+                {% endif %}
+                </li>
+            </ul>
+
+
+          </div>
+        </div>
+      </nav>
+</head>
+<body >
+    <div class="container" >
+        <header class="my-4">
+
+        </header>
+        <main>
+
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <footer class="text-center bg-dark navbar-inner">
+        <div class="container text-white py-4 py-lg-5">
+            <ul class="list-inline">
+                <li class="list-inline-item me-4"><a class="link-light" href="#">Веб дизайн</a></li>
+                <li class="list-inline-item me-4"><a class="link-light" href="#">Разработчка</a></li>
+                <li class="list-inline-item"><a class="link-light" href="#">Хостинг</a></li>
+            </ul>
+            <ul class="list-inline">
+            <!-- ВКонтакте (VK) -->
+            <li class="list-inline-item me-4">
+                <a href="https://vk.com" target="_blank" class="link-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.981c-.772 0-.828.435-1.103 1.083-.995 2.347-2.886 5.387-3.604 4.922-.751-.485-.407-2.406-.35-5.261.015-.754.011-1.271-1.141-1.539-.629-.145-1.241-.205-1.809-.205-2.273 0-3.841.953-2.95 1.119 1.571.293 1.42 3.692 1.054 5.16-.638 2.556-3.036-2.024-4.035-4.305-.241-.548-.315-.974-1.175-.974h-3.255c-.492 0-.787.16-.787.516 0 .602 2.96 6.72 5.786 9.77 2.756 2.975 5.48 2.708 7.376 2.708z"/>
+                    </svg>
+                </a>
+            </li>
+
+            <!-- Rutube -->
+            <li class="list-inline-item me-4">
+                <a href="https://rutube.ru" target="_blank" class="link-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.5 15.5c0 .828-.672 1.5-1.5 1.5h-10c-.828 0-1.5-.672-1.5-1.5v-7c0-.828.672-1.5 1.5-1.5h10c.828 0 1.5.672 1.5 1.5v7zm-6-4.5l-4 3v-6l4 3z"/>
+                    </svg>
+                </a>
+            </li>
+
+            <!-- Яндекс -->
+            <li class="list-inline-item">
+                <a href="https://yandex.ru" target="_blank" class="link-light">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.5 15.5c0 .828-.672 1.5-1.5 1.5h-10c-.828 0-1.5-.672-1.5-1.5v-7c0-.828.672-1.5 1.5-1.5h10c.828 0 1.5.672 1.5 1.5v7zm-6-4.5l-4 3v-6l4 3z"/>
+                    </svg>
+                </a>
+            </li>
+        </ul>
+            <p class="text-muted mb-0">Copyright © 2025 Brand</p>
+        </div>
+    </footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

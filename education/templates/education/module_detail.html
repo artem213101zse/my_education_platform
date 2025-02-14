@@ -1,0 +1,207 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Заголовок и описание модуля -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">{{ module.title }}</h2>
+            <p class="card-text">{{ module.description }}</p>
+        </div>
+    </div>
+
+    <!-- Переключатель режима редактирования -->
+    {% if user.is_authenticated and user.userprofile == module.course.teacher %}
+    <div class="mb-3">
+        <label class="switch">
+            <input type="checkbox" id="edit-mode-toggle" {% if edit_mode %}checked{% endif %}>
+            <span class="slider round"></span>
+        </label>
+        <span>Режим редактирования</span>
+    </div>
+    {% endif %}
+
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+
+    <!-- Содержимое модуля -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Содержимое</h3>
+            <ul class="list-group list-group-flush">
+                {% for content in contents %}
+                <li class="list-group-item">
+                    {% if content.content_type == 'text' %}
+                        <p>{{ content.text }}</p>
+                    {% elif content.content_type == 'video' %}
+                        {% if content.video_url %}
+                            <div class="ratio ratio-16x9">
+                                <iframe src="{{ content.video_url }}" allowfullscreen></iframe>
+                            </div>
+                        {% elif content.video_file %}
+                            <video id="my-video" class="video-js" controls preload="auto" width="100%"
+                                   data-setup='{"poster": "{{ content.video_poster.url }}"}'>
+                                <source src="{{ content.video_file.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+                    {% elif content.content_type == 'image' %}
+                        <img src="{{ content.image.url }}" alt="{{ content.text }}" class="img-fluid rounded">
+                    {% elif content.content_type == 'file' %}
+                        <a href="{{ content.file.url }}" download class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                            </svg>
+                            Скачать файл
+                        </a>
+                    {% endif %}
+
+                    {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
+                        <div class="mt-2">
+                            <a href="{% url 'edit_content' content.id %}" class="btn btn-warning btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                                </svg>
+                                Редактировать
+                            </a>
+                            <a href="{% url 'delete_content' content.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены, что хотите удалить этот контент?');">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                </svg>
+                                Удалить
+                            </a>
+                        </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Тесты -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Тесты</h3>
+            <ul class="list-group list-group-flush">
+                {% for quiz in quizzes %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{% url 'quiz_detail' quiz.id %}">{{ quiz.title }}</a>
+                    {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
+                        <a href="{% url 'add_question' quiz.id %}" class="btn btn-success btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                            </svg>
+                            Добавить вопрос
+                        </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Кнопки для учителя -->
+    {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-4">
+        <a href="{% url 'add_content' module.id %}" class="btn btn-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            Добавить контент
+        </a>
+        <a href="{% url 'add_quiz' module.id %}" class="btn btn-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            Добавить тест
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Кнопка для студентов -->
+    {% if user.is_authenticated and user.userprofile in module.course.students.all %}
+    <div class="d-grid gap-2">
+        <form method="post" action="{% url 'complete_module' module.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                </svg>
+                Пометить модуль как пройденный
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.getElementById('edit-mode-toggle').addEventListener('change', function() {
+        console.log("Переключатель нажат");  // Отладочное сообщение
+        fetch("{% url 'toggle_edit_mode' %}", {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then(response => {
+            if (response.ok) {
+                console.log("Запрос выполнен успешно");  // Отладочное сообщение
+                window.location.reload();  // Перезагружаем страницу после переключения
+            } else {
+                console.log("Ошибка запроса:", response.status);  // Отладочное сообщение
+            }
+        }).catch(error => {
+            console.log("Ошибка:", error);  // Отладочное сообщение
+        });
+    });
+</script>
+{% endblock %}

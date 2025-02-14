@@ -1,0 +1,25 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+    <h2>Ваши результаты тестов</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Тест</th>
+                <th>Баллы</th>
+                <th>Дата прохождения</th>
+                <th>Ответы</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+                <tr>
+                    <td>{{ result.quiz.title }}</td>
+                    <td>{{ result.score }}/{{ result.quiz.questions.count }}</td>
+                    <td>{{ result.completed_at }}</td>
+                    <td><a href="{% url 'quiz_result_detail' result.id %}">Подробнее</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

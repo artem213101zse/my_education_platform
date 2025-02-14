@@ -1,0 +1,47 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Редактирование модуля: {{ module.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Поле "Название" -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Название</label>
+                            <input type="text" name="title" class="form-control" value="{{ module.title }}" required>
+                        </div>
+
+                        <!-- Поле "Описание" -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание</label>
+                            <textarea name="description" class="form-control" rows="5">{{ module.description }}</textarea>
+                        </div>
+
+                        <!-- Поле "Порядок" -->
+                        <div class="mb-3">
+                            <label for="order" class="form-label">Порядок</label>
+                            <input type="number" name="order" class="form-control" value="{{ module.order }}">
+                        </div>
+
+                        <!-- Кнопка "Сохранить" -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
+                                    <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1z"/>
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

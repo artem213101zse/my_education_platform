@@ -1,0 +1,240 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+{% if user.is_authenticated and user.userprofile == course.teacher %}
+    <div class="mb-3">
+        <label class="switch">
+            <input type="checkbox" id="edit-mode-toggle" {% if edit_mode %}checked{% endif %}>
+            <span class="slider round"></span>
+        </label>
+        <span>Режим редактирования</span>
+    </div>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+{% endif %}
+
+<div class="container">
+    <!-- Заголовок и описание курса -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">{{ course.title }}</h2>
+            <p class="card-text">{{ course.description }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основной контент (модули и кнопки) -->
+        <div class="col-md-8">
+            <!-- Модули курса -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Модули курса</h3>
+                    {% if not course.modules.all %}
+                        <p class="text-muted">Здесь пока нет модулей.</p>
+                    {% else %}
+                        <ul class="list-group list-group-flush">
+                            {% for module in course.modules.all %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{% url 'module_detail' module.id %}" class="btn btn-outline-primary btn-sm">
+                                            {{ module.title }}
+                                        </a>
+                                        {% if user.is_authenticated and user.userprofile == course.teacher and edit_mode %}
+                                            <div>
+                                                <a href="{% url 'edit_module' module.id %}" class="btn btn-warning btn-sm me-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                                    </svg>
+                                                    Редактировать
+                                                </a>
+                                                <a href="{% url 'delete_module' module.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Вы точно хотите удалить этот модуль? Все содержимое будет безвозвратно потеряно.');">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                    </svg>
+                                                    Удалить
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-4">
+                {% if user.is_authenticated %}
+                    {% if user_profile not in course.students.all %}
+                        <a href="{% url 'enroll_course' course.id %}" class="btn btn-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                            </svg>
+                            Присоединиться к курсу
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted">Необходимо <a href="{% url 'login' %}">войти в систему</a>, чтобы присоединиться к этому курсу.</p>
+                {% endif %}
+
+                {% if user.is_authenticated and user.userprofile == course.teacher and edit_mode %}
+                    <a href="{% url 'edit_course' course.id %}" class="btn btn-warning me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                        </svg>
+                        Редактировать курс
+                    </a>
+                    <a href="{% url 'add_module' course.id %}" class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                        </svg>
+                        Добавить модуль
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Боковая панель (прогресс, студенты, завершенные модули) -->
+        <div class="col-md-4">
+            {% if user.is_authenticated and user.userprofile in course.students.all %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title">Ваш прогресс на курсе</h3>
+                        <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_percent|floatformat:0 }}%">{{ progress_percent|floatformat:0 }}%</div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if user.is_authenticated and user.userprofile == course.teacher %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title">Обучающиеся на данном курсе</h3>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Прогресс</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>{{ student.user.username }}</td>
+                                        <td>{{ student.user.email }}</td>
+                                        <td>
+                                            {% with student_progress=student.progress.get %}
+                                            {% if student_progress %}
+                                            {{ student_progress.completed_modules.count }}/{{ course.modules.count }} модуля
+                                            {% else %}
+                                            0/{{ course.modules.count }} модуля
+                                            {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if user.is_authenticated and user.userprofile in course.students.all %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title">Завершенные модули</h3>
+                        <ul class="list-group list-group-flush">
+                            {% if not course.modules.all %}
+                            <li class="list-group-item">Еще нет завершенных модулей</li>
+                            {% endif %}
+                            {% for module in course.modules.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ module.title }}
+                                {% if module in progress.completed_modules.all %}
+                                <span class="badge bg-success rounded-pill">Completed</span>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('edit-mode-toggle').addEventListener('change', function() {
+        console.log("Переключатель нажат");  // Отладочное сообщение
+        fetch("{% url 'toggle_edit_mode' %}", {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then(response => {
+            if (response.ok) {
+                console.log("Запрос выполнен успешно");  // Отладочное сообщение
+                window.location.reload();  // Перезагружаем страницу после переключения
+            } else {
+                console.log("Ошибка запроса:", response.status);  // Отладочное сообщение
+            }
+        }).catch(error => {
+            console.log("Ошибка:", error);  // Отладочное сообщение
+        });
+    });
+</script>
+
+{% endblock %}

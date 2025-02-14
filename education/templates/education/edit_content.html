@@ -1,0 +1,62 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+    <h2>Редактировать контент</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="content_type">Тип контента</label>
+            <button type="button" class="btn btn-primary">Primary</button>
+            <select name="content_type" class="form-control" required>
+
+                <option value="text" {% if content.content_type == 'text' %}selected{% endif %}>Text</option>
+                <option value="video" {% if content.content_type == 'video' %}selected{% endif %}>Video</option>
+                <option value="image" {% if content.content_type == 'image' %}selected{% endif %}>Image</option>
+                <option value="file" {% if content.content_type == 'file' %}selected{% endif %}>File</option>
+            </select>
+        </div>
+        <div class="form-group" id="text-field" style="display: {% if content.content_type == 'text' %}block{% else %}none{% endif %};">
+            <label for="text">Text</label>
+            <textarea name="text" class="form-control" rows="5">{{ content.text }}</textarea>
+        </div>
+        <div class="form-group" id="video-field" style="display: {% if content.content_type == 'video' %}block{% else %}none{% endif %};">
+            <label for="video_url">Видео URL (YouTube)</label>
+            <input type="url" name="video_url" class="form-control" value="{{ content.video_url }}">
+            <label for="video_file">Или загрузить видео-файл</label>
+            <input type="file" name="video_file" class="form-control">
+            {% if content.video_file %}
+                <p>Current video: <a href="{{ content.video_file.url }}" target="_blank">{{ content.video_file.name }}</a></p>
+            {% endif %}
+            <label for="video_poster">Video Poster (optional)</label>
+            <input type="file" name="video_poster" class="form-control">
+            {% if content.video_poster %}
+                <p>Current poster: <a href="{{ content.video_poster.url }}" target="_blank">{{ content.video_poster.name }}</a></p>
+            {% endif %}
+        </div>
+        <div class="form-group" id="image-field" style="display: {% if content.content_type == 'image' %}block{% else %}none{% endif %};">
+            <label for="image">Image</label>
+            <input type="file" name="image" class="form-control">
+            {% if content.image %}
+                <p>Current image: <a href="{{ content.image.url }}" target="_blank">{{ content.image.name }}</a></p>
+            {% endif %}
+        </div>
+        <div class="form-group" id="file-field" style="display: {% if content.content_type == 'file' %}block{% else %}none{% endif %};">
+            <label for="file">File</label>
+            <input type="file" name="file" class="form-control">
+            {% if content.file %}
+                <p>Current file: <a href="{{ content.file.url }}" target="_blank">{{ content.file.name }}</a></p>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+
+    <script>
+        document.querySelector('select[name="content_type"]').addEventListener('change', function() {
+            const type = this.value;
+            document.getElementById('text-field').style.display = type === 'text' ? 'block' : 'none';
+            document.getElementById('video-field').style.display = type === 'video' ? 'block' : 'none';
+            document.getElementById('image-field').style.display = type === 'image' ? 'block' : 'none';
+            document.getElementById('file-field').style.display = type === 'file' ? 'block' : 'none';
+        });
+    </script>
+{% endblock %}
