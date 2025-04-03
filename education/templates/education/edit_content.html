@@ -1,62 +1,106 @@
 {% extends 'education/base.html' %}
 
 {% block content %}
-    <h2>Редактировать контент</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="content_type">Тип контента</label>
-            <button type="button" class="btn btn-primary">Primary</button>
-            <select name="content_type" class="form-control" required>
+<div class="container my-5">
+    <!-- Заголовок -->
+    <h1 class="text-dark fw-bold mb-4">Редактировать контент</h1>
 
-                <option value="text" {% if content.content_type == 'text' %}selected{% endif %}>Text</option>
-                <option value="video" {% if content.content_type == 'video' %}selected{% endif %}>Video</option>
-                <option value="image" {% if content.content_type == 'image' %}selected{% endif %}>Image</option>
-                <option value="file" {% if content.content_type == 'file' %}selected{% endif %}>File</option>
-            </select>
-        </div>
-        <div class="form-group" id="text-field" style="display: {% if content.content_type == 'text' %}block{% else %}none{% endif %};">
-            <label for="text">Text</label>
-            <textarea name="text" class="form-control" rows="5">{{ content.text }}</textarea>
-        </div>
-        <div class="form-group" id="video-field" style="display: {% if content.content_type == 'video' %}block{% else %}none{% endif %};">
-            <label for="video_url">Видео URL (YouTube)</label>
-            <input type="url" name="video_url" class="form-control" value="{{ content.video_url }}">
-            <label for="video_file">Или загрузить видео-файл</label>
-            <input type="file" name="video_file" class="form-control">
-            {% if content.video_file %}
-                <p>Current video: <a href="{{ content.video_file.url }}" target="_blank">{{ content.video_file.name }}</a></p>
-            {% endif %}
-            <label for="video_poster">Video Poster (optional)</label>
-            <input type="file" name="video_poster" class="form-control">
-            {% if content.video_poster %}
-                <p>Current poster: <a href="{{ content.video_poster.url }}" target="_blank">{{ content.video_poster.name }}</a></p>
-            {% endif %}
-        </div>
-        <div class="form-group" id="image-field" style="display: {% if content.content_type == 'image' %}block{% else %}none{% endif %};">
-            <label for="image">Image</label>
-            <input type="file" name="image" class="form-control">
-            {% if content.image %}
-                <p>Current image: <a href="{{ content.image.url }}" target="_blank">{{ content.image.name }}</a></p>
-            {% endif %}
-        </div>
-        <div class="form-group" id="file-field" style="display: {% if content.content_type == 'file' %}block{% else %}none{% endif %};">
-            <label for="file">File</label>
-            <input type="file" name="file" class="form-control">
-            {% if content.file %}
-                <p>Current file: <a href="{{ content.file.url }}" target="_blank">{{ content.file.name }}</a></p>
-            {% endif %}
-        </div>
-        <button type="submit" class="btn btn-primary">Save</button>
-    </form>
+    <!-- Форма -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-    <script>
-        document.querySelector('select[name="content_type"]').addEventListener('change', function() {
-            const type = this.value;
-            document.getElementById('text-field').style.display = type === 'text' ? 'block' : 'none';
-            document.getElementById('video-field').style.display = type === 'video' ? 'block' : 'none';
-            document.getElementById('image-field').style.display = type === 'image' ? 'block' : 'none';
-            document.getElementById('file-field').style.display = type === 'file' ? 'block' : 'none';
+            <!-- Выбор типа контента -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Тип контента</h3>
+                <select name="content_type" class="form-select rounded-3" required onchange="setContentType(this.value)">
+                    <option value="text" {% if content.content_type == 'text' %}selected{% endif %}>Текст</option>
+                    <option value="video" {% if content.content_type == 'video' %}selected{% endif %}>Видео</option>
+                    <option value="image" {% if content.content_type == 'image' %}selected{% endif %}>Изображение</option>
+                    <option value="file" {% if content.content_type == 'file' %}selected{% endif %}>Файл</option>
+                </select>
+            </div>
+
+            <!-- Поля редактирования -->
+            <div id="content-fields">
+                <!-- Текст -->
+                <div id="text-field" class="content-field" style="display: {% if content.content_type == 'text' %}block{% else %}none{% endif %};">
+                    <label for="text" class="form-label text-dark fw-bold">Текст</label>
+                    <textarea name="text" class="form-control rounded-3" rows="5" placeholder="Введите текст...">{{ content.text }}</textarea>
+                </div>
+
+                <!-- Видео -->
+                <div id="video-field" class="content-field" style="display: {% if content.content_type == 'video' %}block{% else %}none{% endif %};">
+                    <label for="video_url" class="form-label text-dark fw-bold">Ссылка на видео (YouTube)</label>
+                    <input type="url" name="video_url" class="form-control rounded-3 mb-3" value="{{ content.video_url }}" placeholder="https://youtube.com/...">
+                    <label for="video_file" class="form-label text-dark fw-bold">Или загрузите видеофайл</label>
+                    <input type="file" name="video_file" class="form-control rounded-3 mb-3" accept="video/*">
+                    {% if content.video_file %}
+                    <p class="text-muted mb-3">Текущий файл: <a href="{{ content.video_file.url }}" target="_blank" class="text-primary">{{ content.video_file.name }}</a></p>
+                    {% endif %}
+                    <label for="video_poster" class="form-label text-dark fw-bold">Постер для видео (опционально)</label>
+                    <input type="file" name="video_poster" class="form-control rounded-3" accept="image/*">
+                    {% if content.video_poster %}
+                    <p class="text-muted">Текущий постер: <a href="{{ content.video_poster.url }}" target="_blank" class="text-primary">{{ content.video_poster.name }}</a></p>
+                    {% endif %}
+                </div>
+
+                <!-- Изображение -->
+                <div id="image-field" class="content-field" style="display: {% if content.content_type == 'image' %}block{% else %}none{% endif %};">
+                    <label for="image" class="form-label text-dark fw-bold">Изображение</label>
+                    <input type="file" name="image" class="form-control rounded-3" accept="image/*">
+                    {% if content.image %}
+                    <p class="text-muted">Текущее изображение: <a href="{{ content.image.url }}" target="_blank" class="text-primary">{{ content.image.name }}</a></p>
+                    {% endif %}
+                </div>
+
+                <!-- Файл -->
+                <div id="file-field" class="content-field" style="display: {% if content.content_type == 'file' %}block{% else %}none{% endif %};">
+                    <label for="file" class="form-label text-dark fw-bold">Файл</label>
+                    <input type="file" name="file" class="form-control rounded-3">
+                    {% if content.file %}
+                    <p class="text-muted">Текущий файл: <a href="{{ content.file.url }}" target="_blank" class="text-primary">{{ content.file.name }}</a></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Кнопка сохранения -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save me-2" viewBox="0 0 16 16">
+                        <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 10.5a.5.5 0 0 1-.708 0L4.854 7.354a.5.5 0 1 1 .708-.708L8 9.293V2a2 2 0 0 1 2-2H2zm11 13V4a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1z"/>
+                    </svg>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function setContentType(type) {
+        // Скрываем все поля
+        document.querySelectorAll('.content-field').forEach(field => {
+            field.style.display = 'none';
         });
-    </script>
+        // Показываем нужное поле
+        document.getElementById(type + '-field').style.display = 'block';
+    }
+
+    // Инициализация текущего типа
+    setContentType('{{ content.content_type }}');
+</script>
+
+<style>
+    .form-select, .form-control {
+        transition: all 0.3s ease;
+    }
+    .form-select:focus, .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .text-primary:hover {
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}

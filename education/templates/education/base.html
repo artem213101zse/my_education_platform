@@ -3,125 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Education Platform</title>
+    <title>KOTSI Education Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts для шрифтов -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Кастомный CSS -->
+    <style>
+        /* Базовые стили */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* Градиентный фон */
+        }
+        .container {
+            flex: 1 0 auto;
+        }
+        footer {
+            flex-shrink: 0;
+        }
 
+        /* Навигация */
+        .navbar {
+            background: #1e2a44 !important; /* Тёмно-синий модный цвет */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Тень */
+            padding: 1rem 2rem;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #fff !important;
+        }
+        .navbar-brand img {
+            border-radius: 50%; /* Круглая аватарка */
+            margin-right: 10px;
+        }
+        .btn {
+            transition: all 0.3s ease; /* Плавные переходы */
+        }
+        .btn:hover {
+            transform: translateY(-2px); /* Лёгкий подъём при ховере */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary {
+            background: #007bff;
+            border: none;
+        }
+        .btn-success {
+            background: #28a745;
+            border: none;
+        }
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+        }
+        .btn-info {
+            background: #17a2b8;
+            border: none;
+        }
+
+        /* Футер */
+        footer {
+            background: #1e2a44 !important;
+            padding: 2rem 0;
+            color: #fff;
+        }
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        footer a:hover {
+            color: #00d4ff; /* Яркий акцент при ховере */
+        }
+        .list-inline-item svg {
+            margin-right: 8px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            .navbar-brand img {
+                width: 30px;
+                height: 26px;
+            }
+            .btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1rem;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+            .input-group input, .input-group button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
         <div class="container">
+            <a class="navbar-brand" href="{% url 'course_list' %}">
+                <img src="https://sun9-60.userapi.com/impg/Ns_omxpGuuPbjOfBnJb5MZ2ixkkrf9WFiSwxNw/2mSxWrj1TQs.jpg?size=1920x1920&quality=95&sign=7b3f54a9674e8fd883de8f33416c7782&type=album" alt="Logo" width="40" height="34">
+                KOTSI Education
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <a class="navbar-brand" href="#">
-      <img src="https://sun9-60.userapi.com/impg/Ns_omxpGuuPbjOfBnJb5MZ2ixkkrf9WFiSwxNw/2mSxWrj1TQs.jpg?size=1920x1920&quality=95&sign=7b3f54a9674e8fd883de8f33416c7782&type=album" alt="Bootstrap" width="40" height="34">
-    </a>
-          <a class="navbar-brand" href="{% url 'course_list' %}">KOTSI Education Platform</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+            <div class="collapse navbar-collapse" id="navbarsExample07">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-          <div class="collapse navbar-collapse" id="navbarsExample07">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                {% if user.is_authenticated %}
-                <a href="{% url 'quiz_results' %}" class="btn btn-secondary rounded-pill mx-1">Результаты тестов</a>
-                {% endif %}
-                <li class="nav-item">
-                  {% if user.is_authenticated and user.userprofile.is_teacher %}
-                    <a href="{% url 'create_course' %}" class="btn btn-success rounded-pill mx-1">Создать курс</a>
-                {% endif %}
-                </li>
-
-
-            </ul>
-            <ul class="nav">
-                <li class="nav-item">
-                 <form method="get" action="{% url 'course_list' %}" role="search">
-                    <div class="input-group ">
-                        <input type="form-control" name="q" class="form-control" placeholder="Искать курс...">
-                        <button type="submit" class="btn btn-primary">Поиск</button>
-
-                    </div>
-                </form>
-
-                </li>
-                <li class="nav-item">
-                    {% if user.is_authenticated %}
-
-                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger rounded-pill mx-2">Выйти из системы</button>
-                    </form>
-                {% else %}
-
-                  <a href="{% url 'login' %}" class="btn btn-success rounded-pill mx-1">Войти</a>
-
-
-
-                    <a href="{% url 'signup' %}" class="btn btn-info rounded-pill px-3">Регистрация</a>
-                {% endif %}
-                </li>
-            </ul>
-
-
-          </div>
+                    {% if user.is_authenticated and user.userprofile.is_teacher %}
+                    <li class="nav-item">
+                        <a href="{% url 'create_course' %}" class="btn btn-success rounded-pill mx-1">Создать курс</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="nav align-items-center">
+                    <li class="nav-item">
+                        <form method="get" action="{% url 'course_list' %}" role="search">
+                            <div class="input-group">
+                                <input type="text" name="q" class="form-control" placeholder="Искать курс..." aria-label="Search">
+                                <button type="submit" class="btn btn-primary">Поиск</button>
+                            </div>
+                        </form>
+                    </li>
+                    <li class="nav-item">
+                        {% if user.is_authenticated %}
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger rounded-pill mx-2">Выйти</button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-success rounded-pill mx-1">Войти</a>
+                        <a href="{% url 'signup' %}" class="btn btn-info rounded-pill mx-1">Регистрация</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
         </div>
-      </nav>
-</head>
-<body >
-    <div class="container" >
-        <header class="my-4">
+    </nav>
 
-        </header>
+    <!-- Основной контент -->
+    <div class="container">
+        <header class="my-4"></header>
         <main>
 
             {% block content %}
+
             {% endblock %}
         </main>
     </div>
 
-    <footer class="text-center bg-dark navbar-inner">
-        <div class="container text-white py-4 py-lg-5">
-            <ul class="list-inline">
-                <li class="list-inline-item me-4"><a class="link-light" href="#">Веб дизайн</a></li>
-                <li class="list-inline-item me-4"><a class="link-light" href="#">Разработчка</a></li>
-                <li class="list-inline-item"><a class="link-light" href="#">Хостинг</a></li>
-            </ul>
-            <ul class="list-inline">
-            <!-- ВКонтакте (VK) -->
+    <!-- Футер -->
+<footer class="text-center bg-dark">
+    <div class="container text-white py-4 py-lg-5">
+        <ul class="list-inline">
+            <li class="list-inline-item me-4"><a href="#">Веб-дизайн</a></li>
+            <li class="list-inline-item me-4"><a href="#">Разработка</a></li>
+            <li class="list-inline-item"><a href="#">Хостинг</a></li>
+        </ul>
+        <ul class="list-inline">
+            <!-- ВКонтакте (без изменений) -->
             <li class="list-inline-item me-4">
-                <a href="https://vk.com" target="_blank" class="link-light">
+                <a href="https://vk.com" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M13.162 18.994c.609 0 .858-.406.851-.915-.031-1.917.714-2.949 2.059-1.604 1.488 1.488 1.796 2.519 3.603 2.519h3.2c.808 0 1.126-.26 1.126-.668 0-.863-1.421-2.386-2.625-3.504-1.686-1.565-1.765-1.602-.313-3.486 1.801-2.339 4.157-5.336 2.073-5.336h-3.981c-.772 0-.828.435-1.103 1.083-.995 2.347-2.886 5.387-3.604 4.922-.751-.485-.407-2.406-.35-5.261.015-.754.011-1.271-1.141-1.539-.629-.145-1.241-.205-1.809-.205-2.273 0-3.841.953-2.95 1.119 1.571.293 1.42 3.692 1.054 5.16-.638 2.556-3.036-2.024-4.035-4.305-.241-.548-.315-.974-1.175-.974h-3.255c-.492 0-.787.16-.787.516 0 .602 2.96 6.72 5.786 9.77 2.756 2.975 5.48 2.708 7.376 2.708z"/>
                     </svg>
                 </a>
             </li>
-
-            <!-- Rutube -->
+            <!-- Rutube (новая иконка) -->
             <li class="list-inline-item me-4">
-                <a href="https://rutube.ru" target="_blank" class="link-light">
+                <a href="https://rutube.ru" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.5 15.5c0 .828-.672 1.5-1.5 1.5h-10c-.828 0-1.5-.672-1.5-1.5v-7c0-.828.672-1.5 1.5-1.5h10c.828 0 1.5.672 1.5 1.5v7zm-6-4.5l-4 3v-6l4 3z"/>
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-2-12v8l6-4-6-4z"/>
                     </svg>
                 </a>
             </li>
-
-            <!-- Яндекс -->
+            <!-- Яндекс (новая иконка) -->
             <li class="list-inline-item">
-                <a href="https://yandex.ru" target="_blank" class="link-light">
+                <a href="https://yandex.ru" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm6.5 15.5c0 .828-.672 1.5-1.5 1.5h-10c-.828 0-1.5-.672-1.5-1.5v-7c0-.828.672-1.5 1.5-1.5h10c.828 0 1.5.672 1.5 1.5v7zm-6-4.5l-4 3v-6l4 3z"/>
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm2.52 15.892a7.44 7.44 0 0 1-4.24 1.34c-1.83 0-3.13-.64-4.02-2.15l-.04-.08c-.73-1.62-.98-3.86-.98-5.99 0-2.14.25-4.38.98-6 1.59-3.47 5.05-4.05 7.85-4h.02c1.62 0 3.11.36 4.24 1.34l-.82.92c-.95-.81-2.23-1.26-3.43-1.26h-.02c-2.25 0-4.65.74-5.85 3.46-.55 1.27-.8 2.99-.8 4.54 0 1.55.25 3.27.8 4.54.9 2.07 2.6 2.65 4.85 2.65 1.2 0 2.48-.45 3.43-1.26l.82.92z"/>
                     </svg>
                 </a>
             </li>
         </ul>
-            <p class="text-muted mb-0">Copyright © 2025 Brand</p>
-        </div>
-    </footer>
+        <p class="text-muted mb-0">Copyright © 2025 KOTSI Education</p>
+    </div>
+</footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-

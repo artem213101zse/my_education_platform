@@ -1,53 +1,71 @@
 {% extends 'education/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-4">Курсы</h2>
-
-    <!-- Список курсов -->
-    <div class="row row-cols-1 row-cols-md-2 g-4">
+{% load education_tags %}
+<div class="container my-5">
+    <h1 class="text-dark fw-bold mb-4">Курсы</h1>
+    <div class="course-list">
         {% if not courses %}
-        <div class="col">
-            <div class="card">
-                <div class="card-body">
-                    <p class="card-text">По данному запросу не найдено ни одного курса.</p>
-                    <a href="{% url 'course_list' %}" class="btn btn-outline-primary">Сбросить фильтр поиска</a>
-                </div>
+        <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <p class="text-muted mb-0">По данному запросу не найдено ни одного курса.</p>
+                <a href="{% url 'course_list' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-2" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                    </svg>
+                    Сбросить фильтр
+                </a>
             </div>
         </div>
         {% endif %}
 
         {% for course in courses %}
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Левая колонка: Название, описание и кнопка -->
-                        <div class="col-md-8">
-                            <h5 class="card-title">{{ course.title }}</h5>
-                            <p class="card-text">{{ course.description }}</p>
-                            <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
-                                </svg>
-                                Перейти
-                            </a>
-                        </div>
-
-                        <!-- Правая колонка: Прогресс -->
-                        <div class="col-md-4">
-                            {% if user.is_authenticated and user.userprofile in course.students.all %}
-                            <p class="mb-2">Прогресс:</p>
-                            <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_percent|floatformat:0 }}%">{{ progress_percent|floatformat:0 }}%</div>
-                            </div>
-                            {% endif %}
-                        </div>
+        <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="flex-grow-1">
+                    <h5 class="text-dark fw-bold mb-2">{{ course.title }}</h5>
+                    <p class="text-muted mb-0" style="max-width: 600px;">{{ course.description|truncatewords:30 }}</p>
+                </div>
+                {% if user.is_authenticated and user.userprofile in course.students.all %}
+                <div class="progress-container" style="min-width: 200px;">
+                    <p class="text-dark fw-bold mb-2">Прогресс:</p>
+                    <div class="progress" role="progressbar" aria-label="Course progress" aria-valuenow="{{ progress_data|lookup:course.id }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_data|lookup:course.id }}%">{{ progress_data|lookup:course.id|floatformat:0 }}%</div>
                     </div>
+                </div>
+                {% endif %}
+                <div>
+                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right me-2" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                        </svg>
+                        Перейти
+                    </a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .progress-container { min-width: 200px; }
+    .btn-primary { transition: all 0.3s ease; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+    @media (max-width: 768px) { .progress-container { min-width: 100%; } }
+</style>
+
+<!-- Кастомный фильтр для словаря -->
+{% with ''|center:0 as range %}
+{% filter force_escape %}
+{% for item in range %}
+{% endfor %}
+{% endfilter %}
+{% endwith %}
+{% endblock %}
+
+{% block extra_filters %}
+{% if not request.resolver_match.url_name == 'course_list' %}
+{% endif %}
 {% endblock %}

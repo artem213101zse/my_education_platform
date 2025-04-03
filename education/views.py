@@ -10,7 +10,10 @@ from django.contrib.auth.decorators import user_passes_test
 
 from django.db.models import Q
 
-
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
+from .models import Course, Module, UserProfile, Content, UserProgress, Quiz, Question, Answer, QuizResult
+from django.contrib.auth.decorators import login_required, user_passes_test
 def course_list(request):
     query = request.GET.get('q')
     if query:
@@ -19,91 +22,167 @@ def course_list(request):
         )
     else:
         courses = Course.objects.all()
+
+    progress_data = {}
+    if request.user.is_authenticated:
+        user_profile = UserProfile.objects.get(user=request.user)
+        for course in courses:
+            if user_profile in course.students.all():
+                progress, created = UserProgress.objects.get_or_create(user=user_profile, course=course)
+                total_modules = course.modules.count()
+                completed_modules = progress.completed_modules.count()
+                progress_percent = (completed_modules / total_modules * 100) if total_modules > 0 else 0
+                progress_data[course.id] = progress_percent
+
     return render(request, 'education/course_list.html', {
         'courses': courses,
-
-
+        'progress_data': progress_data,
     })
 
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     user_profile = None
     progress_percent = 0
-    edit_mode = request.session.get('edit_mode', False)  # Получаем состояние режима редактирования
+    students_progress = {}
+    edit_mode = request.session.get('edit_mode', False)
 
     if request.user.is_authenticated:
         user_profile = UserProfile.objects.get(user=request.user)
-        try:
-            progress = UserProgress.objects.get(user=user_profile, course=course)
-            completed_modules_count = progress.completed_modules.count()
-            total_modules_count = course.modules.count()
-            if total_modules_count > 0:
-                progress_percent = (completed_modules_count / total_modules_count) * 100
-        except UserProgress.DoesNotExist:
-            pass  # Прогресс не найден, оставляем 0%
+        # Прогресс текущего юзера
+        progress, created = UserProgress.objects.get_or_create(user=user_profile, course=course)
+        total_modules = course.modules.count()
+        completed_modules = progress.completed_modules.count()
+        progress_percent = (completed_modules / total_modules * 100) if total_modules > 0 else 0
 
-    # Получаем список студентов курса
-    students = course.students.all()
+        # Прогресс всех студентов курса
+        students = course.students.all()
+        for student in students:
+            student_progress, _ = UserProgress.objects.get_or_create(user=student, course=course)
+            student_completed = student_progress.completed_modules.count()
+            students_progress[student.id] = {
+                'completed_modules': student_completed,
+                'total_modules': total_modules,
+                'percent': (student_completed / total_modules * 100) if total_modules > 0 else 0
+            }
 
     return render(request, 'education/course_detail.html', {
         'course': course,
         'user_profile': user_profile,
-        # 'progress_percent': progress_percent,
-        # 'students': students,
-        'edit_mode': edit_mode,  # Передаем состояние режима редактирования
+        'progress_percent': progress_percent,
+        'students': students,
+        'students_progress': students_progress,
+        'edit_mode': edit_mode,
     })
 
+
+def is_teacher(user):
+    return user.userprofile.is_teacher
+
+
+@login_required
 def module_detail(request, module_id):
     module = get_object_or_404(Module, id=module_id)
     contents = module.contents.all()
-    quizzes = module.quizzes.all()  # Получаем все тесты модуля
-    edit_mode = request.session.get('edit_mode', False)  # Получаем состояние режима редактирования
+    quizzes = module.quizzes.all()
+    edit_mode = request.session.get('edit_mode', False)
+    quiz_results = {}
+    if request.user.is_authenticated:
+        user_profile = UserProfile.objects.get(user=request.user)
+        for quiz in quizzes:
+            result = QuizResult.objects.filter(user=user_profile, quiz=quiz).order_by('-completed_at').first()
+            if result:
+                quiz_results[quiz.id] = {
+                    'score': result.score,
+                    'total': quiz.questions.count(),
+                    'percent': (result.score / quiz.questions.count() * 100) if quiz.questions.count() > 0 else 0
+                }
     return render(request, 'education/module_detail.html', {
         'module': module,
         'contents': contents,
-        'quizzes': quizzes,  # Передаем тесты в контекст
-        'edit_mode': edit_mode,  # Передаем состояние режима редактирования
+        'quizzes': quizzes,
+        'edit_mode': edit_mode,
+        'quiz_results': quiz_results,
     })
 
-
+@login_required
 def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     questions = quiz.questions.all()
+    results = None
 
     if request.method == 'POST':
-        # Обработка ответов
         score = 0
+        user_answers = {}
         for question in questions:
             selected_answer_id = request.POST.get(f'question_{question.id}')
             if selected_answer_id:
                 selected_answer = Answer.objects.get(id=selected_answer_id)
+                user_answers[question.id] = selected_answer
                 if selected_answer.is_correct:
                     score += 1
 
-        # Сохранение результата
         user_profile = UserProfile.objects.get(user=request.user)
-        QuizResult.objects.create(user=user_profile, quiz=quiz, score=score)
+        result = QuizResult.objects.create(user=user_profile, quiz=quiz, score=score)
+        total_questions = questions.count()
+        results = {
+            'score': score,
+            'total': total_questions,
+            'percent': (score / total_questions * 100) if total_questions > 0 else 0,
+            'user_answers': user_answers,
+        }
+        messages.success(request, f'Ваш результат: {score}/{total_questions} ({results["percent"] | floatformat:0}%)')
 
-        messages.success(request, f'Your score: {score}/{questions.count()}')
-        return redirect('module_detail', module_id=quiz.module.id)
-
-    return render(request, 'education/quiz_detail.html', {'quiz': quiz, 'questions': questions})
-
-
+    return render(request, 'education/quiz_detail.html', {
+        'quiz': quiz,
+        'questions': questions,
+        'results': results,
+    })
 
 
 @login_required
-def quiz_results(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-    results = user_profile.quiz_results.all()
-    return render(request, 'education/quiz_results.html', {'results': results})
+@user_passes_test(is_teacher)
+def add_content(request, module_id):
+    module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
+    if request.method == 'POST':
+        content_type = request.POST.get('content_type')
 
-@login_required
-def quiz_result_detail(request, result_id):
-    result = get_object_or_404(QuizResult, id=result_id, user__user=request.user)
-    questions = result.quiz.questions.all()
-    return render(request, 'education/quiz_result_detail.html', {'result': result, 'questions': questions})
-
+        if content_type == 'quiz':
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            quiz = Quiz.objects.create(title=title, description=description, module=module)
+            # Добавляем вопросы и ответы
+            question_texts = request.POST.getlist('questions')
+            for q_text in question_texts:
+                if q_text:
+                    question = Question.objects.create(text=q_text, quiz=quiz)
+                    answers = request.POST.getlist(f'answers_{question_texts.index(q_text)}')
+                    correct_idx = int(request.POST.get(f'correct_answer_{question_texts.index(q_text)}', 0))
+                    for idx, answer_text in enumerate(answers):
+                        if answer_text:
+                            Answer.objects.create(
+                                question=question,
+                                text=answer_text,
+                                is_correct=(idx == correct_idx)
+                            )
+            messages.success(request, 'Тест добавлен успешно!')
+        else:
+            text = request.POST.get('text', '')
+            video_url = request.POST.get('video_url', '')
+            video_file = request.FILES.get('video_file')
+            image = request.FILES.get('image')
+            file = request.FILES.get('file')
+            Content.objects.create(
+                module=module,
+                content_type=content_type,
+                text=text,
+                video_url=video_url,
+                video_file=video_file,
+                image=image,
+                file=file
+            )
+            messages.success(request, 'Контент добавлен успешно!')
+        return redirect('module_detail', module_id=module.id)
+    return render(request, 'education/add_content.html', {'module': module})
 
 
 
@@ -188,29 +267,7 @@ def add_module(request, course_id):
 
 
 
-@login_required
-@user_passes_test(is_teacher)
-def add_content(request, module_id):
-    module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
-    if request.method == 'POST':
-        content_type = request.POST.get('content_type')
-        text = request.POST.get('text', '')
-        video_url = request.POST.get('video_url', '')
-        video_file = request.FILES.get('video_file')
-        image = request.FILES.get('image')
-        file = request.FILES.get('file')
-        Content.objects.create(
-            module=module,
-            content_type=content_type,
-            text=text,
-            video_url=video_url,
-            video_file=video_file,
-            image=image,
-            file=file
-        )
-        messages.success(request, 'Content added successfully!')
-        return redirect('module_detail', module_id=module.id)
-    return render(request, 'education/add_content.html', {'module': module})
+
 
 
 @login_required

@@ -1,32 +1,44 @@
 {% extends 'education/base.html' %}
 
 {% block content %}
-    <section class="py-4 py-xl-5">
-        <div class="container">
-            <div class="row d-flex justify-content-center">
-                <div class="col-md-6 col-xl-4">
-                    <div class="card mb-5">
-                        <div class="card-body d-flex flex-column align-items-center">
-                            <h2>Авторизация</h2>
+<div class="container my-5">
+    <!-- Заголовок -->
+    <h1 class="text-dark fw-bold mb-4 text-center">Авторизация</h1>
 
-                             <form method="post">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label for="username">Логин</label>
-                                    <input type="text" name="username" class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="password">Пароль</label>
-                                    <input type="password" name="password" class="form-control" required>
-                                </div>
-                                <br>
-                                <button type="submit" class="btn btn-primary">Войти</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+    <!-- Форма -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mx-auto" style="max-width: 400px;">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="username" class="form-label text-dark fw-bold">Логин</label>
+                <input type="text" name="username" class="form-control rounded-3" required placeholder="Введите логин...">
             </div>
-        </div>
-    </section>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+            <div class="mb-4">
+                <label for="password" class="form-label text-dark fw-bold">Пароль</label>
+                <input type="password" name="password" class="form-control rounded-3" required placeholder="Введите пароль...">
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right me-2" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
+                    <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                </svg>
+                Войти
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+</style>
 {% endblock %}
