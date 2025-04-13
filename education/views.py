@@ -1,3 +1,5 @@
+from django.template.defaultfilters import floatformat
+
 from .models import Course, Module, UserProfile, Content, UserProgress
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
@@ -39,6 +41,7 @@ def course_list(request):
         'progress_data': progress_data,
     })
 
+@login_required
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     user_profile = None
@@ -130,7 +133,7 @@ def quiz_detail(request, quiz_id):
             'percent': (score / total_questions * 100) if total_questions > 0 else 0,
             'user_answers': user_answers,
         }
-        messages.success(request, f'Ваш результат: {score}/{total_questions} ({results["percent"] | floatformat:0}%)')
+        messages.success(request, f'Ваш результат: {score}/{total_questions} ({results["percent"]}%)')
 
     return render(request, 'education/quiz_detail.html', {
         'quiz': quiz,
@@ -216,9 +219,9 @@ def enroll_course(request, course_id):
     user_profile = UserProfile.objects.get(user=request.user)
     if user_profile not in course.students.all():
         course.students.add(user_profile)
-        messages.success(request, 'You have successfully enrolled in the course.')
+        messages.success(request, 'Вы просоединились к курсу.')
     else:
-        messages.warning(request, 'You are already enrolled in this course.')
+        messages.warning(request, 'Вы уже находитесь на этом курсе.')
     return redirect('course_detail', course_id=course.id)
 
 
@@ -235,7 +238,7 @@ def create_course(request):
         description = request.POST.get('description')
         teacher = request.user.userprofile
         course = Course.objects.create(title=title, description=description, teacher=teacher)
-        messages.success(request, 'Course created successfully!')
+        messages.success(request, 'Курс создан!')
         return redirect('course_detail', course_id=course.id)
     return render(request, 'education/create_course.html')
 
@@ -248,7 +251,7 @@ def edit_course(request, course_id):
         course.title = request.POST.get('title')
         course.description = request.POST.get('description')
         course.save()
-        messages.success(request, 'Course updated successfully!')
+        messages.success(request, 'Курс успешно обновлён!')
         return redirect('course_detail', course_id=course.id)
     return render(request, 'education/edit_course.html', {'course': course})
 
@@ -261,7 +264,7 @@ def add_module(request, course_id):
         title = request.POST.get('title')
         description = request.POST.get('description')
         Module.objects.create(title=title, description=description, course=course)
-        messages.success(request, 'Module added successfully!')
+        messages.success(request, 'Модуль успешно создан!')
         return redirect('course_detail', course_id=course.id)
     return render(request, 'education/add_module.html', {'course': course})
 
@@ -278,7 +281,7 @@ def add_quiz(request, module_id):
         title = request.POST.get('title')
         description = request.POST.get('description')
         quiz = Quiz.objects.create(title=title, description=description, module=module)
-        messages.success(request, 'Quiz added successfully!')
+        messages.success(request, 'Тест успешно добавлен!')
         return redirect('module_detail', module_id=module.id)
     return render(request, 'education/add_quiz.html', {'module': module})
 
@@ -290,7 +293,7 @@ def add_question(request, quiz_id):
     if request.method == 'POST':
         text = request.POST.get('text')
         question = Question.objects.create(text=text, quiz=quiz)
-        messages.success(request, 'Question added successfully!')
+        messages.success(request, 'Вопрос успешно добавлен!')
         return redirect('add_question', quiz_id=quiz.id)
     return render(request, 'education/add_question.html', {'quiz': quiz})
 
@@ -302,7 +305,7 @@ def add_answer(request, question_id):
         text = request.POST.get('text')
         is_correct = request.POST.get('is_correct', False) == 'on'
         Answer.objects.create(text=text, is_correct=is_correct, question=question)
-        messages.success(request, 'Answer added successfully!')
+        messages.success(request, 'Ответ успешно добалвен!')
         return redirect('add_answer', question_id=question.id)
     return render(request, 'education/add_answer.html', {'question': question})
 
@@ -313,7 +316,7 @@ def complete_module(request, module_id):
     user_profile = request.user.userprofile
     progress, created = UserProgress.objects.get_or_create(user=user_profile, course=module.course)
     progress.completed_modules.add(module)
-    messages.success(request, f'Module "{module.title}" marked as completed!')
+    messages.success(request, f'Модуль "{module.title}" завершен!')
     return redirect('module_detail', module_id=module.id)
 
 @login_required
@@ -325,7 +328,7 @@ def edit_module(request, module_id):
         module.description = request.POST.get('description')
         module.order = request.POST.get('order', 0)
         module.save()
-        messages.success(request, 'Module updated successfully!')
+        messages.success(request, 'Модуль обновлен!')
         return redirect('course_detail', course_id=module.course.id)
     return render(request, 'education/edit_module.html', {'module': module})
 
@@ -335,7 +338,7 @@ def delete_module(request, module_id):
     module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
     course_id = module.course.id
     module.delete()
-    messages.success(request, 'Module deleted successfully!')
+    messages.success(request, 'Модуль удалён!')
     return redirect('course_detail', course_id=course_id)
 
 
@@ -352,7 +355,7 @@ def edit_content(request, content_id):
         content.image = request.FILES.get('image', content.image)
         content.file = request.FILES.get('file', content.file)
         content.save()
-        messages.success(request, 'Content updated successfully!')
+        messages.success(request, 'Содержимое обновлено!')
         return redirect('module_detail', module_id=content.module.id)
     return render(request, 'education/edit_content.html', {'content': content})
 
@@ -362,7 +365,7 @@ def delete_content(request, content_id):
     content = get_object_or_404(Content, id=content_id, module__course__teacher=request.user.userprofile)
     module_id = content.module.id
     content.delete()
-    messages.success(request, 'Content deleted successfully!')
+    messages.success(request, 'Содержимое успешно удалено!')
     return redirect('module_detail', module_id=module_id)
 
 @login_required

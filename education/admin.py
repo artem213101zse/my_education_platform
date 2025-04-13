@@ -22,7 +22,7 @@ class ContentAdmin(admin.ModelAdmin):
 
     def short_text(self, obj):
         return obj.text[:50] if obj.text else ''
-    short_text.short_description = 'Text Preview'
+    short_text.short_description = 'Предпросмотр текста'
 
 class QuizAdmin(admin.ModelAdmin):
     list_display = ('title', 'module')

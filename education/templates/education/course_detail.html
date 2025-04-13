@@ -11,7 +11,7 @@
                 <input type="checkbox" id="edit-mode-toggle" {% if edit_mode %}checked{% endif %}>
                 <span class="slider round"></span>
             </label>
-            <span class="text-dark fw-bold">Edit Mode</span>
+            <span class="text-dark fw-bold">Режим редактирования</span>
         </div>
         <style>
             .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
@@ -24,7 +24,7 @@
         {% endif %}
     </div>
     <p class="text-muted mb-4 lead" style="max-width: 800px;">{{ course.description }}</p>
-
+    {% if user.is_authenticated and user_profile in course.students.all %}
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
@@ -66,7 +66,7 @@
                 </div>
                 {% endif %}
             </div>
-
+            {% endif %}
             <div class="d-flex flex-wrap gap-3 mt-4">
                 {% if user.is_authenticated %}
                     {% if user_profile not in course.students.all %}
@@ -105,7 +105,7 @@
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
                 <h3 class="text-dark fw-bold mb-3">Ваш прогресс</h3>
                 <div class="progress" role="progressbar" aria-label="Course progress" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
-                    <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_percent }}%">{{ progress_percent|floatformat:0 }}%</div>
+                    <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_percent|floatformat:0 }}%">{{ progress_percent|floatformat:0 }}%</div>
                 </div>
             </div>
             {% endif %}
@@ -150,7 +150,7 @@
                     <li class="list-group-item bg-transparent border-0 py-2 d-flex justify-content-between align-items-center">
                         {{ module.title }}
                         {% if progress.completed_modules.all|lookup:module.id %}
-                        <span class="badge bg-success rounded-pill">✔</span>
+                        <span class="badge bg-success rounded-pill">✔Nice</span>
                         {% endif %}
                     </li>
                     {% endfor %}

@@ -107,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -127,3 +127,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'  # URL-префикс для медиафайлов
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка для хранения медиафайлов
+
+LOGIN_URL = '/login/'  # Если твой логин на /login/, а не /accounts/login/
+LOGIN_REDIRECT_URL = '/'  # Куда редиректить после логина (например, главная)
+LOGOUT_REDIRECT_URL = '/'  # Редирект на главную после логаута
