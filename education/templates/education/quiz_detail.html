@@ -1,66 +1,84 @@
 {% extends 'education/base.html' %}
+{% load education_tags %}
 
 {% block content %}
 <div class="container my-5">
-    <!-- Заголовок и описание теста -->
-    <div class="mb-5">
-        <h1 class="text-dark fw-bold mb-2">{{ quiz.title }}</h1>
-        <p class="text-muted lead" style="max-width: 800px;">{{ quiz.description }}</p>
-    </div>
-
-    <!-- Форма теста -->
+    <h1 class="text-dark fw-bold mb-4">{{ quiz.title }}</h1>
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        {% if request.user.userprofile.is_teacher and not preview_mode %}
+        <h3 class="text-dark fw-bold mb-4">РЕДАКТОР ТЕСТА</h3>
+        {% if not questions %}
+        <p class="text-muted">Вопросов в этом тесте нет.</p>
+        {% else %}
+        <div class="quiz-questions">
+            {% for question in questions %}
+            <div class="question-item mb-4 p-3 bg-light rounded-3 shadow-sm">
+                <h5 class="text-dark fw-bold mb-3">{{ question.text }}</h5>
+                <p class="text-muted">Тип вопроса: {% if question.question_type == 'text' %}Ввод текста{% else %}Множественный выбор{% endif %}</p>
+                <p class="text-muted">Правильный ответ: {{ question.correct_answer }}</p>
+                {% if question.question_type == 'multiple_choice' and question.answer_options %}
+                <p class="text-muted">Варианты ответа: {{ question.answer_options|join:", " }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <a href="{% url 'add_question' quiz.id %}" class="btn btn-primary rounded-pill px-4 py-2 mb-3">Добавить вопрос</a>
+        <a href="{% url 'quiz_results' quiz.id %}" class="btn btn-info rounded-pill px-4 py-2 mb-3">Посмотреть результаты</a>
+        <a href="{% url 'quiz_detail' quiz.id 0 %}?preview=true" class="btn btn-warning rounded-pill px-4 py-2 mb-3">Предпросмотр теста</a>
+        <a href="{% url 'module_detail' quiz.module.id %}" class="btn btn-secondary rounded-pill px-4 py-2 mb-3">Вернуться к модулю</a>
+        {% else %}
+        {% if not questions %}
+        <p class="text-muted">Вопросов в этом тесте нет.</p>
+        {% else %}
         <form method="post">
             {% csrf_token %}
-            <h3 class="text-dark fw-bold mb-4">Вопросы</h3>
-            {% if not questions %}
-            <p class="text-muted">Пока нет вопросов в этом тесте.</p>
-            {% else %}
             <div class="quiz-questions">
-                {% for question in questions %}
                 <div class="question-item mb-4 p-3 bg-light rounded-3 shadow-sm">
-                    <h5 class="text-dark fw-bold mb-3">{{ question.text }}</h5>
-                    <div class="answers-list">
-                        {% for answer in question.answers.all %}
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="answer_{{ answer.id }}" value="{{ answer.id }}">
-                            <label class="form-check-label text-dark" for="answer_{{ answer.id }}">
-                                {{ answer.text }}
-                            </label>
+                    <h5 class="text-dark fw-bold mb-3">{{ current_question.text }}</h5>
+                    {% if current_question.question_type == 'text' %}
+                    <div class="mb-3">
+                        <label for="answer" class="form-label text-dark fw-bold">Ваш ответ</label>
+                        <input type="text" name="answer" id="answer" class="form-control rounded-3" required>
+                    </div>
+                    {% elif current_question.question_type == 'multiple_choice' and current_question.answer_options %}
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold">Выберите правильный ответ:</label>
+                        {% for option in current_question.answer_options %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="answer" id="option_{{ forloop.counter }}" value="{{ option }}" required>
+                            <label class="form-check-label" for="option_{{ forloop.counter }}">{{ option }}</label>
                         </div>
                         {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-2" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-                    </svg>
-                    Отправить
-                </button>
+            <!-- Группа кнопок для навигации -->
+            <div class="btn-toolbar mb-4" role="toolbar">
+                <div class="btn-group me-2" role="group">
+                    {% for i in total_questions|times %}
+                    <a href="{% url 'quiz_detail' quiz.id i %}{% if preview_mode %}?preview=true{% endif %}"
+                       class="btn {% if i == current_question_index %}btn-primary{% elif i in answered_indices %}btn-primary{% else %}btn-danger{% endif %}">
+                        {{ i|add:1 }}
+                    </a>
+                    {% endfor %}
+                </div>
             </div>
-            {% endif %}
+            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">Ответить</button>
+            <a href="{% url 'quiz_results' quiz.id %}" class="btn btn-info rounded-pill px-4 py-2">Посмотреть результаты</a>
         </form>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
+{% endblock %}
 
-<style>
-    .form-check-input:checked {
-        background-color: #28a745; /* Зелёный при выборе */
-        border-color: #28a745;
-    }
-    .form-check-input:focus {
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-    }
-    .form-check-label {
-        cursor: pointer;
-        transition: color 0.3s ease;
-    }
-    .form-check-label:hover {
-        color: #007bff; /* Синий при ховере */
-    }
-</style>
+{% block extra_templates %}
+{% filter force_escape %}
+{% verbatim %}
+{% for i in total_questions|times %}
+{% endfor %}
+{% endverbatim %}
+{% endfilter %}
 {% endblock %}

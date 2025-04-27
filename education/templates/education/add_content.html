@@ -2,124 +2,85 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-dark fw-bold mb-4">Добавить контент к "{{ module.title }}"</h1>
-
+    <h1 class="text-dark fw-bold mb-4">Добавить контент в модуль "{{ module.title }}"</h1>
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="hidden" name="content_type" id="content_type" value="text" required>
-
-            <div class="mb-4">
-                <h3 class="text-dark fw-bold mb-3">Тип контента</h3>
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn content-type-btn btn-outline-primary rounded-pill px-4 py-2 active" onclick="setContentType('text')" data-type="text">Текст</button>
-                    <button type="button" class="btn content-type-btn btn-outline-danger rounded-pill px-4 py-2" onclick="setContentType('video')" data-type="video">Видео</button>
-                    <button type="button" class="btn content-type-btn btn-outline-info rounded-pill px-4 py-2" onclick="setContentType('image')" data-type="image">Изображение</button>
-                    <button type="button" class="btn content-type-btn btn-outline-warning rounded-pill px-4 py-2" onclick="setContentType('file')" data-type="file">Файл</button>
-                    <button type="button" class="btn content-type-btn btn-outline-success rounded-pill px-4 py-2" onclick="setContentType('quiz')" data-type="quiz">Тест</button>
-                </div>
+            <div class="mb-3">
+                <label for="content_type" class="form-label text-dark fw-bold">Тип контента</label>
+                <select name="content_type" id="content_type" class="form-select rounded-3" onchange="toggleFields()">
+                    <option value="text">Текст</option>
+                    <option value="video">Видео</option>
+                    <option value="image">Изображение</option>
+                    <option value="file">Файл</option>
+                    <option value="quiz">Тест</option>
+                </select>
             </div>
 
-            <div id="content-fields">
-                <div id="text-field" class="content-field">
-                    <label for="text" class="form-label text-dark fw-bold">Текст</label>
-                    <textarea name="text" class="form-control rounded-3" rows="5" placeholder="Введите текст..."></textarea>
-                </div>
-
-                <div id="video-field" class="content-field" style="display: none;">
-                    <label for="video_url" class="form-label text-dark fw-bold">Ссылка на видео (YouTube)</label>
-                    <input type="url" name="video_url" class="form-control rounded-3 mb-3" placeholder="https://youtube.com/...">
-                    <label for="video_file" class="form-label text-dark fw-bold">Или загрузите видеофайл</label>
-                    <input type="file" name="video_file" class="form-control rounded-3" accept="video/*">
-                </div>
-
-                <div id="image-field" class="content-field" style="display: none;">
-                    <label for="image" class="form-label text-dark fw-bold">Изображение</label>
-                    <input type="file" name="image" class="form-control rounded-3" accept="image/*">
-                </div>
-
-                <div id="file-field" class="content-field" style="display: none;">
-                    <label for="file" class="form-label text-dark fw-bold">Файл</label>
-                    <input type="file" name="file" class="form-control rounded-3">
-                </div>
-
-                <div id="quiz-field" class="content-field" style="display: none;">
-                    <div class="mb-4">
-                        <label for="title" class="form-label text-dark fw-bold">Название теста</label>
-                        <input type="text" name="title" class="form-control rounded-3" placeholder="Введите название теста...">
-                    </div>
-                    <div class="mb-4">
-                        <label for="description" class="form-label text-dark fw-bold">Описание теста</label>
-                        <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Опишите тест..."></textarea>
-                    </div>
-                    <div id="questions-container">
-                        <h4 class="text-dark fw-bold mb-3">Вопросы</h4>
-                        <div class="question-item mb-3">
-                            <label class="form-label text-dark fw-bold">Вопрос 1</label>
-                            <textarea name="questions" class="form-control rounded-3 mb-2" rows="2" placeholder="Введите текст вопроса..."></textarea>
-                            <div class="answers-container">
-                                <label class="form-label text-dark fw-bold">Варианты ответа</label>
-                                <input type="text" name="answers_0" class="form-control rounded-3 mb-2" placeholder="Вариант 1">
-                                <input type="text" name="answers_0" class="form-control rounded-3 mb-2" placeholder="Вариант 2">
-                                <input type="text" name="answers_0" class="form-control rounded-3 mb-2" placeholder="Вариант 3">
-                                <input type="text" name="answers_0" class="form-control rounded-3 mb-2" placeholder="Вариант 4">
-                                <label class="form-label text-dark fw-bold">Правильный ответ (номер варианта, начиная с 0)</label>
-                                <input type="number" name="correct_answer_0" class="form-control rounded-3" min="0" max="3" value="0">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 mt-2" onclick="addQuestion()">Добавить вопрос</button>
-                </div>
+            <div id="text_field" class="mb-3 content-field">
+                <label for="text" class="form-label text-dark fw-bold">Текст</label>
+                <textarea name="text" id="text" class="form-control rounded-3" rows="5"></textarea>
             </div>
 
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">Добавить</button>
+            <div id="video_url_field" class="mb-3 content-field" style="display: none;">
+                <label for="video_url" class="form-label text-dark fw-bold">Ссылка на видео</label>
+                <input type="url" name="video_url" id="video_url" class="form-control rounded-3">
             </div>
+
+            <div id="video_file_field" class="mb-3 content-field" style="display: none;">
+                <label for="video_file" class="form-label text-dark fw-bold">Или загрузите видео</label>
+                <input type="file" name="video_file" id="video_file" class="form-control rounded-3">
+            </div>
+
+            <div id="image_field" class="mb-3 content-field" style="display: none;">
+                <label for="image" class="form-label text-dark fw-bold">Изображение</label>
+                <input type="file" name="image" id="image" class="form-control rounded-3">
+            </div>
+
+            <div id="file_field" class="mb-3 content-field" style="display: none;">
+                <label for="file" class="form-label text-dark fw-bold">Файл</label>
+                <input type="file" name="file" id="file" class="form-control rounded-3">
+            </div>
+
+            <div id="quiz_field" class="mb-3 content-field" style="display: none;">
+                <label for="title" class="form-label text-dark fw-bold">Название теста</label>
+                <input type="text" name="title" id="title" class="form-control rounded-3">
+            </div>
+
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 0 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>
+                Добавить
+            </button>
         </form>
     </div>
 </div>
 
 <script>
-    let questionCount = 1;
+    function toggleFields() {
+        const contentType = document.getElementById('content_type').value;
+        const fields = ['text_field', 'video_url_field', 'video_file_field', 'image_field', 'file_field', 'quiz_field'];
 
-    function setContentType(type) {
-        document.querySelectorAll('.content-field').forEach(field => field.style.display = 'none');
-        document.getElementById(type + '-field').style.display = 'block';
-        document.getElementById('content_type').value = type;
-        document.querySelectorAll('.content-type-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.getAttribute('data-type') === type) btn.classList.add('active');
+        fields.forEach(field => {
+            document.getElementById(field).style.display = 'none';
         });
+
+        if (contentType === 'text') {
+            document.getElementById('text_field').style.display = 'block';
+        } else if (contentType === 'video') {
+            document.getElementById('video_url_field').style.display = 'block';
+            document.getElementById('video_file_field').style.display = 'block';
+        } else if (contentType === 'image') {
+            document.getElementById('image_field').style.display = 'block';
+        } else if (contentType === 'file') {
+            document.getElementById('file_field').style.display = 'block';
+        } else if (contentType === 'quiz') {
+            document.getElementById('quiz_field').style.display = 'block';
+        }
     }
 
-    function addQuestion() {
-        const container = document.getElementById('questions-container');
-        const newQuestion = document.createElement('div');
-        newQuestion.classList.add('question-item', 'mb-3');
-        newQuestion.innerHTML = `
-            <label class="form-label text-dark fw-bold">Вопрос ${questionCount + 1}</label>
-            <textarea name="questions" class="form-control rounded-3 mb-2" rows="2" placeholder="Введите текст вопроса..."></textarea>
-            <div class="answers-container">
-                <label class="form-label text-dark fw-bold">Варианты ответа</label>
-                <input type="text" name="answers_${questionCount}" class="form-control rounded-3 mb-2" placeholder="Вариант 1">
-                <input type="text" name="answers_${questionCount}" class="form-control rounded-3 mb-2" placeholder="Вариант 2">
-                <input type="text" name="answers_${questionCount}" class="form-control rounded-3 mb-2" placeholder="Вариант 3">
-                <input type="text" name="answers_${questionCount}" class="form-control rounded-3 mb-2" placeholder="Вариант 4">
-                <label class="form-label text-dark fw-bold">Правильный ответ (номер варианта, начиная с 0)</label>
-                <input type="number" name="correct_answer_${questionCount}" class="form-control rounded-3" min="0" max="3" value="0">
-            </div>
-        `;
-        container.appendChild(newQuestion);
-        questionCount++;
-    }
-
-    setContentType('text');
+    document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
-
-<style>
-    .content-type-btn { transition: all 0.3s ease; }
-    .content-type-btn:hover, .content-type-btn.active { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-    .content-type-btn.active { background-color: #007bff; color: white; border-color: #007bff; }
-    .form-control:focus { border-color: #007bff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
-</style>
 {% endblock %}

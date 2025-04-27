@@ -35,7 +35,6 @@ class QuestionAdmin(admin.ModelAdmin):
     search_fields = ('text',)
 
 class AnswerAdmin(admin.ModelAdmin):
-    list_display = ('text', 'question', 'is_correct')
     list_filter = ('question', 'is_correct')
     search_fields = ('text',)
 

@@ -39,55 +39,49 @@ class Module(models.Model):
     def __str__(self):
         return self.title
 
-
-class Lesson(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons')
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        verbose_name = 'Урок'
-        verbose_name_plural = 'Уроки'
-
-    def __str__(self):
-        return self.title
-
 class Content(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='contents', verbose_name='Модуль')
     content_type = models.CharField(max_length=50, choices=[('text', 'Text'), ('video', 'Video'), ('image', 'Image'), ('file', 'File')], verbose_name='Тип контента')
     text = models.TextField(blank=True, null=True, verbose_name='Текст')
     video_url = models.URLField(blank=True, null=True, verbose_name='Ссылка на видео')
-    video_file = models.FileField(upload_to='content_videos/', blank=True, null=True, verbose_name='Прикрепить видео')  # Новое поле для видеофайлов
+    video_file = models.FileField(upload_to='content_videos/', blank=True, null=True, verbose_name='Прикрепить видео')
     image = models.ImageField(upload_to='content_images/', blank=True, null=True, verbose_name='Изображение')
     file = models.FileField(upload_to='content_files/', blank=True, null=True, verbose_name='Файл')
-
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = 'Содержимое'
         verbose_name_plural = 'Содержимое'
-
+        ordering = ['order']
 
     def __str__(self):
         return f"{self.module.title} - {self.content_type}"
 
-
-
 class Quiz(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='quizzes')
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = 'Тест'
         verbose_name_plural = 'Тесты'
+        ordering = ['order']
 
     def __str__(self):
         return self.title
 
 class Question(models.Model):
+    QUESTION_TYPES = (
+        ('text', 'Ввод текста'),
+        ('multiple_choice', 'Множественный выбор'),
+    )
+
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions', verbose_name='Тест')
-    text = models.TextField(verbose_name='Вопрос к тесту')
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='text', verbose_name='Тип вопроса')
+    text = models.TextField(verbose_name='Текст вопроса')
+    correct_answer = models.CharField(max_length=200, verbose_name='Правильный ответ')
+    answer_options = models.JSONField(null=True, blank=True, verbose_name='Варианты ответа')  # Для множественного выбора
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Вопрос'
@@ -97,26 +91,18 @@ class Question(models.Model):
         return self.text
 
 class Answer(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', verbose_name='Вопрос')
-    text = models.CharField(max_length=255, verbose_name='Вариант ответа')
-    is_correct = models.BooleanField(default=False, verbose_name='Правильный ответ')
+    answer_text = models.CharField(max_length=200, verbose_name='Ответ пользователя')
+    is_correct = models.BooleanField(verbose_name='Правильный ответ')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
 
     def __str__(self):
-        return self.text
-
-
-class QuizResult(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='quiz_results')
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='results')
-    score = models.PositiveIntegerField(default=0)
-    completed_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.user.username} - {self.quiz.title} - {self.score}"
+        return f"{self.user.user.username} - {self.answer_text}"
 
 class UserProgress(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='progress')

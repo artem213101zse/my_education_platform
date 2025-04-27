@@ -1,5 +1,4 @@
 {% extends 'education/base.html' %}
-{% load education_tags %}
 
 {% block content %}
 <div class="container my-5">
@@ -17,7 +16,7 @@
             <span class="text-dark fw-bold">Режим редактирования</span>
         </div>
         <style>
-            .switch { position: relative; display: inline-block; width: 60px; height:34px; }
+            .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
             .switch input { opacity: 0; width: 0; height: 0; }
             .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px; }
             .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }
@@ -35,26 +34,52 @@
                 <p class="text-muted">Пока тут пусто, добавьте контент или тест!</p>
                 {% else %}
                 <div class="content-list">
-                    {% for content in contents %}
-                    <div class="content-item mb-4 p-3 bg-light rounded-3 shadow-sm">
-                        <h4 class="text-dark fw-bold mb-3">{{ content.content_type|capfirst }}</h4>
-                        {% if content.content_type == 'text' %}
-                        <p class="text-dark">{{ content.text }}</p>
-                        {% elif content.content_type == 'video' %}
-                        {% if content.video_url %}
-                        <div class="ratio ratio-16x9">
-                            <iframe src="{{ content.video_url }}" allowfullscreen class="rounded"></iframe>
+                    {% for item in combined_items %}
+                    <div class="content-item mb-4 p-3 bg-light rounded-3 shadow-sm position-relative">
+                        {% if item.type == 'content' %}
+                        <div class="d-flex align-items-center mb-3">
+                            {% if item.content_type == 'text' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#007bff" class="bi bi-text-left me-2" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
+                            </svg>
+                            <h4 class="text-dark fw-bold mb-0">Текст</h4>
+                            {% elif item.content_type == 'video' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff9500" class="bi bi-play-circle me-2" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445"/>
+                            </svg>
+                            <h4 class="text-dark fw-bold mb-0">Видео</h4>
+                            {% elif item.content_type == 'image' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#28a745" class="bi bi-image me-2" viewBox="0 0 16 16">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                                <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12"/>
+                            </svg>
+                            <h4 class="text-dark fw-bold mb-0">Изображение</h4>
+                            {% elif item.content_type == 'file' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#17a2b8" class="bi bi-file-earmark-arrow-down me-2" viewBox="0 0 16 16">
+                                <path d="M8.5 6.5a.5.5 0 0 0-1 0v3.793L6.354 9.146a.5.5 0 1 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
+                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 1a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 .5.5v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                            </svg>
+                            <h4 class="text-dark fw-bold mb-0">Файл</h4>
+                            {% endif %}
                         </div>
-                        {% elif content.video_file %}
+                        {% if item.content_type == 'text' %}
+                        <p class="text-dark">{{ item.text }}</p>
+                        {% elif item.content_type == 'video' %}
+                        {% if item.video_url %}
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ item.video_url }}" allowfullscreen class="rounded"></iframe>
+                        </div>
+                        {% elif item.video_file %}
                         <video controls preload="auto" width="100%" class="rounded">
-                            <source src="{{ content.video_file.url }}" type="video/mp4">
+                            <source src="{{ item.video_file.url }}" type="video/mp4">
                             Ваш браузер не поддерживает видео.
                         </video>
                         {% endif %}
-                        {% elif content.content_type == 'image' %}
-                        <img src="{{ content.image.url }}" alt="{{ content.text }}" class="img-fluid rounded shadow-sm">
-                        {% elif content.content_type == 'file' %}
-                        <a href="{{ content.file.url }}" download class="btn btn-primary btn-sm rounded-pill px-4">
+                        {% elif item.content_type == 'image' %}
+                        <img src="{{ item.image.url }}" alt="{{ item.text }}" class="img-fluid rounded shadow-sm">
+                        {% elif item.content_type == 'file' %}
+                        <a href="{{ item.file.url }}" download class="btn btn-primary btn-sm rounded-pill px-4">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
                                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
                                 <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
@@ -62,16 +87,59 @@
                             Скачать
                         </a>
                         {% endif %}
+                        {% elif item.type == 'quiz' %}
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <div class="d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#dc3545" class="bi bi-question-circle me-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                </svg>
+                                <h4 class="text-dark fw-bold mb-0">
+                                    <a href="{% url 'quiz_detail' item.id %}" class="text-dark text-decoration-none">{{ item.title }}</a>
+                                </h4>
+                            </div>
+                            {% if user.is_authenticated %}
+                            {% if user.userprofile.is_teacher %}
+                            <div class="mt-2">
+
+                                <a href="#quiz-{{ item.id }}-details" class="text-dark text-decoration-none" data-bs-toggle="collapse">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down ms-2" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                            <div class="collapse mt-3" id="quiz-{{ item.id }}-details">
+
+                            </div>
+                            {% else %}
+
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
-                        <div class="mt-3 d-flex gap-2 flex-wrap">
-                            <a href="{% url 'edit_content' content.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <div class="mt-3 d-flex gap-2 flex-wrap position-absolute top-0 end-0 p-2">
+                            {% if item.type == 'quiz' %}
+                            <form method="post" action="{% url 'reset_quiz' item.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3" onclick="return confirm('Сбросить результаты теста?');">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat me-2" viewBox="0 0 16 16">
+                                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
+                                        <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                                    </svg>
+                                    Сбросить
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{% if item.type == 'content' %}{% url 'edit_content' item.id %}{% else %}{% url 'quiz_detail' item.id %}{% endif %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                     <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
                                 </svg>
                                 Редакт.
                             </a>
-                            <a href="{% url 'delete_content' content.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Вы уверены, что хотите удалить этот контент?');">
+                            <a href="{% if item.type == 'content' %}{% url 'delete_content' item.id %}{% else %}{% url 'delete_quiz' item.id %}{% endif %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Вы уверены, что хотите удалить этот элемент?');">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
@@ -83,44 +151,12 @@
                     </div>
                     {% endfor %}
                 </div>
-
-                <div class="mt-4">
-                    <h3 class="text-dark fw-bold mb-4">Тесты</h3>
-                    {% if not quizzes %}
-                    <p class="text-muted">Тестов пока нет, добавьте первый!</p>
-                    {% else %}
-                    <div class="list-group list-group-flush">
-                        {% for quiz in quizzes %}
-                        <div class="list-group-item bg-light rounded-3 mb-3 shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap">
-                            <a href="{% url 'quiz_detail' quiz.id %}" class="text-dark fw-bold text-decoration-none">{{ quiz.title }}</a>
-                            <div class="d-flex gap-2 align-items-center">
-                                {% if quiz_results|lookup:quiz.id %}
-<span class="badge bg-success rounded-pill">
-    Результат: {{ quiz_results|lookup:quiz.id|lookup:'score' }}/{{ quiz.questions.count }}
-    ({{ quiz_results|lookup:quiz.id|lookup:'percent'|floatformat:0 }}%)
-</span>
-{% endif %}
-                                {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
-                                <a href="{% url 'add_content' module.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                    </svg>
-                                    Редактировать тест
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
                 {% endif %}
             </div>
 
             <div class="d-flex flex-wrap gap-3 mt-4">
                 {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
-                <a href="{% url 'add_content' module.id %}" class="btn btn-primary rounded-pill px-4 py-2">
+                <a href="{% url 'add_content' module.id %}" class="btn btn-primary rounded-pill px-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
@@ -131,7 +167,7 @@
                 {% if user.is_authenticated and user.userprofile in module.course.students.all %}
                 <form method="post" action="{% url 'complete_module' module.id %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2">
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-2" viewBox="0 0 16 16">
                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                             <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
@@ -144,6 +180,17 @@
         </div>
     </div>
 </div>
+
+<style>
+    .content-item { transition: transform 0.3s ease; }
+    .content-item:hover { transform: translateY(-5px); }
+    @media (max-width: 768px) {
+        .content-item { padding: 1rem; }
+        .content-item h4 { font-size: 1.1rem; }
+        .content-item p { font-size: 0.9rem; }
+        .btn { font-size: 0.9rem; padding: 0.5rem 1rem; }
+    }
+</style>
 
 <script>
     document.getElementById('edit-mode-toggle').addEventListener('change', function() {

@@ -19,3 +19,8 @@ def mul(value, arg):
         return float(value) * float(arg)
     except ValueError:
         return 0
+
+
+@register.filter
+def times(number):
+    return range(number)

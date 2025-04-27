@@ -1,0 +1,102 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Заголовок -->
+    <h1 class="text-dark fw-bold mb-4">Мой профиль</h1>
+
+    <!-- Информация о пользователе -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="flex-grow-1">
+                {% if user.first_name %}
+                <h5 class="text-dark fw-bold mb-2">Привет, {{ user.first_name }}!</h5>
+                {% else %}
+                <h5 class="text-dark fw-bold mb-2">Привет, {{ user.username }}!</h5>
+                {% endif %}
+                <p class="text-muted mb-0">Логин: {{ user.username }}</p>
+                <p class="text-muted mb-0">Email: {{ user.email }}</p>
+                <p class="text-muted mb-0">Роль: {% if user.userprofile.is_teacher %}Учитель{% else %}Студент{% endif %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
+        <h5 class="text-dark fw-bold mb-3">Статистика</h5>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <p class="text-muted mb-0">Пройдено курсов: <strong>{{ total_courses }}</strong></p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <p class="text-muted mb-0">Средний прогресс: <strong>{{ average_progress|floatformat:0 }}%</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма редактирования -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        <h5 class="text-dark fw-bold mb-3">Редактировать профиль</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3 position-relative">
+                <label for="id_first_name" class="form-label text-dark fw-bold">Имя</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                        </svg>
+                    </span>
+                    <input type="text" name="first_name" id="id_first_name" class="form-control rounded-3" placeholder="Введите ваше имя..." value="{{ form.first_name.value|default_if_none:'' }}">
+                </div>
+            </div>
+            <div class="mb-3 position-relative">
+                <label for="id_email" class="form-label text-dark fw-bold">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.022zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.022l4.708-2.825L1 5.383z"/>
+                        </svg>
+                    </span>
+                    <input type="email" name="email" id="id_email" class="form-control rounded-3" required placeholder="Введите email..." value="{{ form.email.value|default_if_none:'' }}">
+                </div>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_teacher" id="id_is_teacher" class="form-check-input" {% if form.is_teacher.value %}checked{% endif %}>
+                <label for="id_is_teacher" class="form-check-label text-dark">Я учитель</label>
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
+                    <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 10.5l-3.147-3.146a.5.5 0 1 1 .708-.708L9.5 9.293V2H2zm-1 12V2h1v11H1zm3 0V8h6v5H4zm7 0V8h3v5h-3z"/>
+                </svg>
+                Сохранить
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .btn-primary {
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+    .form-control {
+        border-left: none;
+    }
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+{% endblock %}
