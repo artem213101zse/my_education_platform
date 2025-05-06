@@ -178,33 +178,39 @@
     <div class="course-list">
         {% for course in my_courses %}
         <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4 course-card">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div class="flex-grow-1">
-                    <h5 class="text-dark fw-bold mb-2">{{ course.title }}</h5>
-                    <p class="text-muted mb-2">Автор: {{ course.teacher.user.first_name|default:course.teacher.user.username }}</p>
-                    <p class="text-muted mb-2 description" style="max-height: 3rem; overflow: hidden; position: relative;">
-                        {{ course.description|truncatewords:15 }}
-                        <span class="read-more" style="color: #007bff; cursor: pointer;">Читать дальше</span>
-                        <span class="full-description" style="display: none;">{{ course.description }}</span>
-                    </p>
-                </div>
-                <div class="progress-container" style="min-width: 200px;">
-                    <p class="text-dark fw-bold mb-2">Прогресс:</p>
-                    <div class="progress" role="progressbar" aria-label="Course progress" aria-valuenow="{{ progress_data|lookup:course.id }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
-                        <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_data|lookup:course.id|floatformat:0 }}%">{{ progress_data|lookup:course.id|floatformat:0 }}%</div>
-                    </div>
-                    <p class="text-muted mt-1">Завершено {{ completed_modules_data|lookup:course.id }} из {{ total_modules_data|lookup:course.id }} модулей</p>
-                </div>
-                <div>
-                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right me-2" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
-                        </svg>
-                        Перейти
-                    </a>
-                </div>
-            </div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="flex-grow-1">
+            <h5 class="text-dark fw-bold mb-2">{{ course.title }}</h5>
+            {% if course.teacher == user.userprofile %}
+            <p class="text-muted mb-2">Автор: {{ course.teacher.user.first_name|default:course.teacher.user.username }} <span class="badge bg-success mb-2">Владелец</span></p>
+
+            {% else %}
+            <p class="text-muted mb-2">Автор: {{ course.teacher.user.first_name|default:course.teacher.user.username }}</p>
+            {% endif %}
+            <p class="text-muted mb-2 description" style="max-height: 3rem; overflow: hidden; position: relative;">
+                {{ course.description|truncatewords:15 }}
+                <span class="read-more" style="color: #007bff; cursor: pointer;">Читать дальше</span>
+                <span class="full-description" style="display: none;">{{ course.description }}</span>
+            </p>
         </div>
+        <div class="progress-container" style="min-width: 200px;">
+            <p class="text-dark fw-bold mb-2">Прогресс:</p>
+            <div class="progress position-relative" role="progressbar" aria-label="Course progress" aria-valuenow="{{ progress_data|lookup:course.id }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+                <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_data|lookup:course.id|floatformat:0 }}%"></div>
+                <span class="position-absolute top-50 start-50 translate-middle text-dark" style="font-size: 0.9rem;">{{ progress_data|lookup:course.id|floatformat:0 }}%</span>
+            </div>
+            <p class="text-muted mt-1">Завершено {{ completed_modules_data|lookup:course.id }} из {{ total_modules_data|lookup:course.id }} модулей</p>
+        </div>
+        <div>
+            <a href="{% url 'course_detail' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right me-2" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                </svg>
+                Перейти
+            </a>
+        </div>
+    </div>
+</div>
         {% endfor %}
     </div>
     {% endif %}
@@ -232,36 +238,39 @@
         {% endif %}
         {% for course in all_courses %}
         <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4 course-card">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div class="flex-grow-1">
-                    <h5 class="text-dark fw-bold mb-2">{{ course.title }}</h5>
-                    <p class="text-muted mb-2">Автор: {{ course.teacher.user.first_name|default:course.teacher.user.username }}</p>
-                    <p class="text-muted mb-2 description" style="max-height: 3rem; overflow: hidden; position: relative;">
-                        {{ course.description|truncatewords:15 }}
-                        <span class="read-more" style="color: #007bff; cursor: pointer;">Читать дальше</span>
-                        <span class="full-description" style="display: none;">{{ course.description }}</span>
-                    </p>
-                </div>
-                <div>
-                    <form method="post" action="{% url 'enroll_course' course.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                            </svg>
-                            Присоединиться
-                        </button>
-                    </form>
-                    <a href="{% url 'course_detail' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right me-2" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
-                        </svg>
-                        Перейти
-                    </a>
-                </div>
-            </div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="flex-grow-1">
+            <h5 class="text-dark fw-bold mb-2">{{ course.title }}</h5>
+            {% if course.teacher == user.userprofile %}
+            <span class="badge bg-success mb-2">Владелец</span>
+            {% endif %}
+            <p class="text-muted mb-2">Автор: {{ course.teacher.user.first_name|default:course.teacher.user.username }}</p>
+            <p class="text-muted mb-2 description" style="max-height: 3rem; overflow: hidden; position: relative;">
+                {{ course.description|truncatewords:15 }}
+                <span class="read-more" style="color: #007bff; cursor: pointer;">Читать дальше</span>
+                <span class="full-description" style="display: none;">{{ course.description }}</span>
+            </p>
         </div>
+        <div>
+            <form method="post" action="{% url 'enroll_course' course.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success rounded-pill px-4 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                    </svg>
+                    Присоединиться
+                </button>
+            </form>
+            <a href="{% url 'course_detail' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right me-2" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                </svg>
+                Перейти
+            </a>
+        </div>
+    </div>
+</div>
         {% endfor %}
     </div>
     {% endif %}

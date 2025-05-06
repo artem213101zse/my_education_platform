@@ -2,76 +2,64 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-dark fw-bold mb-4">Добавить вопрос в тест "{{ quiz.title }}"</h1>
+    <h1 class="text-dark fw-bold mb-4">Добавить вопросы в тест "{{ quiz.title }}"</h1>
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
-        <form method="post">
+        <form method="post" id="questionForm">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="question_type" class="form-label text-dark fw-bold">Тип вопроса</label>
-                <select name="question_type" id="question_type" class="form-select rounded-3" onchange="toggleFields()">
-                    <option value="text">Ввод текста</option>
-                    <option value="multiple_choice">Множественный выбор</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="text" class="form-label text-dark fw-bold">Текст вопроса</label>
-                <textarea name="text" id="text" class="form-control rounded-3" rows="3" required></textarea>
-            </div>
-            <div id="text_answer_field" class="mb-3">
-                <label for="correct_answer_text" class="form-label text-dark fw-bold">Правильный ответ</label>
-                <input type="text" name="correct_answer_text" id="correct_answer_text" class="form-control rounded-3" required>
-            </div>
-            <div id="multiple_choice_fields" class="mb-3" style="display: none;">
-                <label class="form-label text-dark fw-bold">Варианты ответа (минимум 2)</label>
-                <div class="mb-2">
-                    <input type="text" name="option1" class="form-control rounded-3" placeholder="Вариант 1">
+            <div id="questionsContainer">
+                <div class="question-group mb-4">
+                    <div class="mb-3">
+                        <label for="text_0" class="form-label text-dark fw-bold">Текст вопроса</label>
+                        <textarea name="text_0" id="text_0" class="form-control rounded-3" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="correct_answer_0" class="form-label text-dark fw-bold">Правильный ответ</label>
+                        <input type="text" name="correct_answer_0" id="correct_answer_0" class="form-control rounded-3" required>
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <input type="text" name="option2" class="form-control rounded-3" placeholder="Вариант 2">
-                </div>
-                <div class="mb-2">
-                    <input type="text" name="option3" class="form-control rounded-3" placeholder="Вариант 3">
-                </div>
-                <div class="mb-2">
-                    <input type="text" name="option4" class="form-control rounded-3" placeholder="Вариант 4">
-                </div>
-                <label for="correct_answer_mc" class="form-label text-dark fw-bold">Правильный ответ</label>
-                <input type="text" name="correct_answer_mc" id="correct_answer_mc" class="form-control rounded-3">
             </div>
-            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">Добавить вопрос</button>
-            <a href="{% url 'quiz_detail' quiz.id 0 %}" class="btn btn-secondary rounded-pill px-4 py-2">Назад</a>
+            <button type="button" id="addQuestionBtn" class="btn btn-primary rounded-pill px-4 py-2">Добавить новый вопрос</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">Сохранить все вопросы</button>
+            <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-secondary rounded-pill px-4 py-2">Назад</a>
         </form>
     </div>
 </div>
 
 <script>
-function toggleFields() {
-    const questionType = document.getElementById('question_type').value;
-    const textAnswerField = document.getElementById('text_answer_field');
-    const multipleChoiceFields = document.getElementById('multiple_choice_fields');
+document.addEventListener('DOMContentLoaded', function() {
+    let questionCount = 0;
 
-    // Очищаем поля перед переключением
-    document.getElementById('correct_answer_text').value = '';
-    document.getElementById('correct_answer_mc').value = '';
-    document.querySelectorAll('#multiple_choice_fields input[name^="option"]').forEach(input => input.value = '');
+    document.getElementById('addQuestionBtn').addEventListener('click', function() {
+        questionCount++;
+        const container = document.getElementById('questionsContainer');
+        const newQuestionGroup = document.createElement('div');
+        newQuestionGroup.className = 'question-group mb-4';
+        newQuestionGroup.innerHTML = `
+            <div class="mb-3">
+                <label for="text_${questionCount}" class="form-label text-dark fw-bold">Текст вопроса</label>
+                <textarea name="text_${questionCount}" id="text_${questionCount}" class="form-control rounded-3" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="correct_answer_${questionCount}" class="form-label text-dark fw-bold">Правильный ответ</label>
+                <input type="text" name="correct_answer_${questionCount}" id="correct_answer_${questionCount}" class="form-control rounded-3" required>
+            </div>
+        `;
+        container.appendChild(newQuestionGroup);
+    });
 
-    // Переключаем видимость
-    textAnswerField.style.display = 'none';
-    multipleChoiceFields.style.display = 'none';
-
-    if (questionType === 'text') {
-        textAnswerField.style.display = 'block';
-        document.getElementById('correct_answer_text').required = true;
-        document.getElementById('correct_answer_mc').required = false;
-        document.querySelectorAll('#multiple_choice_fields input[name^="option"]').forEach(input => input.required = false);
-    } else if (questionType === 'multiple_choice') {
-        multipleChoiceFields.style.display = 'block';
-        document.getElementById('correct_answer_text').required = false;
-        document.getElementById('correct_answer_mc').required = true;
-        document.querySelectorAll('#multiple_choice_fields input[name^="option"]').forEach(input => input.required = true);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', toggleFields);
+    document.getElementById('questionForm').addEventListener('submit', function(event) {
+        const questions = document.querySelectorAll('#questionsContainer textarea[name^="text_"]');
+        let hasEmpty = false;
+        questions.forEach(textarea => {
+            if (!textarea.value.trim()) {
+                hasEmpty = true;
+            }
+        });
+        if (hasEmpty) {
+            event.preventDefault();
+            alert('Все поля "Текст вопроса" должны быть заполнены!');
+        }
+    });
+});
 </script>
 {% endblock %}

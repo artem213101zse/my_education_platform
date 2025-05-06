@@ -77,16 +77,9 @@ class Quiz(models.Model):
         return self.title
 
 class Question(models.Model):
-    QUESTION_TYPES = (
-        ('text', 'Ввод текста'),
-        ('multiple_choice', 'Множественный выбор'),
-    )
-
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions', verbose_name='Тест')
-    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='text', verbose_name='Тип вопроса')
     text = models.TextField(verbose_name='Текст вопроса')
     correct_answer = models.CharField(max_length=200, verbose_name='Правильный ответ')
-    answer_options = models.JSONField(null=True, blank=True, verbose_name='Варианты ответа')  # Для множественного выбора
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -96,19 +89,18 @@ class Question(models.Model):
     def __str__(self):
         return self.text
 
-class Answer(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', verbose_name='Вопрос')
-    answer_text = models.CharField(max_length=200, verbose_name='Ответ пользователя')
-    is_correct = models.BooleanField(verbose_name='Правильный ответ')
+class QuizResult(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='quiz_results')
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='results')
+    answers = models.JSONField(verbose_name='Ответы')  # Формат: [{"question_id": X, "user_answer": "Y", "is_correct": true}, ...]
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Ответ'
-        verbose_name_plural = 'Ответы'
+        verbose_name = 'Результат теста'
+        verbose_name_plural = 'Результаты тестов'
 
     def __str__(self):
-        return f"{self.user.user.username} - {self.answer_text}"
+        return f"{self.user.user.username} - {self.quiz.title}"
 
 class UserProgress(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='progress')

@@ -1,0 +1,52 @@
+{% extends 'education/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Путь навигации -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Курсы</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' quiz.module.course.id %}">{{ quiz.module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'module_detail' quiz.module.id %}">{{ quiz.module.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'quiz_results' quiz.id %}">Результаты теста</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Ответы пользователя</li>
+        </ol>
+    </nav>
+
+    <h1 class="text-dark fw-bold mb-4">Ответы пользователя: {{ user.user.username }}</h1>
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        <h3 class="text-dark fw-bold mb-4">Результаты теста: {{ quiz.title }}</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Вопрос</th>
+                    <th>Ответ пользователя</th>
+                    <th>Правильный ответ</th>
+                    <th>Результат</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for answer in progress.answers %}
+                {% for question in questions %}
+                {% if question.id == answer.question_id %}
+                <tr class="{% if answer.is_correct %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <td>{{ question.text }}</td>
+                    <td>{{ answer.user_answer }}</td>
+                    <td>{{ question.correct_answer }}</td>
+                    <td>{% if answer.is_correct %}Правильно{% else %}Неправильно{% endif %}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-4">
+            <p class="text-dark fw-bold">Результат: {{ progress.correct }} из {{ progress.total }} правильных ответов.</p>
+            <p class="text-dark fw-bold">Процент: {{ progress.percentage|floatformat:1 }}%</p>
+        </div>
+        <a href="{% url 'quiz_results' quiz.id %}" class="btn btn-secondary rounded-pill px-4 py-2 mt-3">
+            Вернуться к результатам
+        </a>
+    </div>
+</div>
+{% endblock %}

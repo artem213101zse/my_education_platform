@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Course, Module, Content, Quiz, Question, Answer
+from .models import UserProfile, Course, Module, Content, Quiz, Question
 
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'is_teacher')
@@ -44,4 +44,3 @@ admin.site.register(Module, ModuleAdmin)
 admin.site.register(Content, ContentAdmin)
 admin.site.register(Quiz, QuizAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(Answer, AnswerAdmin)

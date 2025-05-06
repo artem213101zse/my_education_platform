@@ -31,7 +31,7 @@
     <!-- Основной контент -->
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-light">
         <h3 class="text-dark fw-bold mb-4">Содержимое модуля</h3>
-        {% if not contents and not quizzes %}
+        {% if not combined_items %}
         <p class="text-muted text-center">Пока тут пусто, добавьте контент или тест!</p>
         {% else %}
         <div class="content-list">
@@ -86,45 +86,54 @@
                 </a>
                 {% endif %}
                 {% elif item.type == 'quiz' %}
-                <div class="d-flex align-items-center justify-content-between flex-wrap">
-                    <div class="d-flex align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#dc3545" class="bi bi-question-circle me-2" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-                        </svg>
-                        <h4 class="text-dark fw-bold mb-0">
-                            <a href="{% url 'quiz_detail' item.id %}" class="text-dark text-decoration-none">{{ item.title }}</a>
-                        </h4>
-                    </div>
-                    {% if user.is_authenticated %}
-                    {% if user.userprofile.is_teacher %}
-                    <div class="mt-2">
-                        <a href="#quiz-{{ item.id }}-details" class="text-dark text-decoration-none" data-bs-toggle="collapse">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down ms-2" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#dc3545" class="bi bi-question-circle me-2" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
                             </svg>
+                            <h4 class="text-dark fw-bold mb-0">
+                                {% if item.result %}
+                                <a href="{% url 'quiz_results' item.id %}" class="text-dark text-decoration-none">Посмотреть результаты теста "{{ item.title }}"</a>
+                                {% else %}
+                                <a href="{% url 'quiz_detail' item.id %}" class="text-dark text-decoration-none">Пройти тест "{{ item.title }}"</a>
+                                {% endif %}
+                            </h4>
+                        </div>
+                        <!-- Кнопки для всех пользователей -->
+                        <div class="edit-buttons mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+{% if user.is_authenticated and user.userprofile == module.course.teacher %}
+                            <a href="{% url 'quiz_results' item.id %}" class="btn btn-outline-info btn-sm rounded-pill px-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-line me-2" viewBox="0 0 16 16">
+                                    <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1V2zm1 12h2V2h-2v12zm-3 0V7H7v7h2zm-5 0v-3H2v3h2z"/>
+                                </svg>
+                                Просмотреть результаты
+                            </a>
+{% endif %}
+                        <!-- Кнопки для учителя в режиме редактирования -->
+                        {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
+
+                            <a href="{% url 'add_question' item.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                </svg>
+                                Добавить вопросы
+                            </a>
+                            <a href="{% if item.type == 'content' %}{% url 'delete_content' item.id %}{% else %}{% url 'delete_quiz' item.id %}{% endif %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Вы уверены, что хотите удалить этот элемент?');">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-2" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                            </svg>
+                            Удалить
                         </a>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="collapse mt-3" id="quiz-{{ item.id }}-details"></div>
-                    {% endif %}
-                    {% endif %}
-                </div>
                 {% endif %}
 
-                {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode %}
-                <div class="edit-buttons mt-3 d-flex gap-2 flex-wrap {% if item.type == 'quiz' %}position-absolute top-0 end-0 p-2{% else %}position-relative{% endif %}">
-                    {% if item.type == 'quiz' %}
-                    <form method="post" action="{% url 'reset_quiz' item.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3" onclick="return confirm('Сбросить результаты теста?');">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat me-2" viewBox="0 0 16 16">
-                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
-                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
-                            </svg>
-                            Сбросить
-                        </button>
-                    </form>
-                    {% endif %}
+                {% if user.is_authenticated and user.userprofile == module.course.teacher and edit_mode and item.type != 'quiz' %}
+                <div class="edit-buttons mt-3 d-flex gap-2 flex-wrap position-relative">
                     <a href="{% if item.type == 'content' %}{% url 'edit_content' item.id %}{% else %}{% url 'quiz_detail' item.id %}{% endif %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
