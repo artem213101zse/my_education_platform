@@ -2,6 +2,15 @@
 
 {% block content %}
 <div class="container my-5">
+    <!-- Путь навигации -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Курсы</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' content.module.course.id %}">{{ content.module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'module_detail' content.module.id %}">{{ content.module.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Редактирование</li>
+        </ol>
+    </nav>
     <!-- Заголовок -->
     <h1 class="text-dark fw-bold mb-4">Редактировать контент</h1>
 
@@ -10,15 +19,22 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Выбор типа контента -->
+            <!-- Поле для заголовка -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Название контента</h3>
+                <input type="text" name="title" class="form-control rounded-3" value="{{ content.title }}" placeholder="Введите название..." required>
+            </div>
+
+            <!-- Выбор типа контента (кнопки) -->
             <div class="mb-4">
                 <h3 class="text-dark fw-bold mb-3">Тип контента</h3>
-                <select name="content_type" class="form-select rounded-3" required onchange="setContentType(this.value)">
-                    <option value="text" {% if content.content_type == 'text' %}selected{% endif %}>Текст</option>
-                    <option value="video" {% if content.content_type == 'video' %}selected{% endif %}>Видео</option>
-                    <option value="image" {% if content.content_type == 'image' %}selected{% endif %}>Изображение</option>
-                    <option value="file" {% if content.content_type == 'file' %}selected{% endif %}>Файл</option>
-                </select>
+                <input type="hidden" name="content_type" id="content_type" value="{{ content.content_type }}">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn content-type-btn {% if content.content_type == 'text' %}btn-primary active{% else %}btn-outline-primary{% endif %}" data-type="text" data-color="primary" onclick="setContentType('text')">Текст</button>
+                    <button type="button" class="btn content-type-btn {% if content.content_type == 'video' %}btn-warning active{% else %}btn-outline-warning{% endif %}" data-type="video" data-color="warning" onclick="setContentType('video')">Видео</button>
+                    <button type="button" class="btn content-type-btn {% if content.content_type == 'image' %}btn-success active{% else %}btn-outline-success{% endif %}" data-type="image" data-color="success" onclick="setContentType('image')">Изображение</button>
+                    <button type="button" class="btn content-type-btn {% if content.content_type == 'file' %}btn-info active{% else %}btn-outline-info{% endif %}" data-type="file" data-color="info" onclick="setContentType('file')">Файл</button>
+                </div>
             </div>
 
             <!-- Поля редактирования -->
@@ -79,10 +95,28 @@
 
 <script>
     function setContentType(type) {
+        // Обновляем скрытое поле
+        document.getElementById('content_type').value = type;
+
+        // Обновляем стили кнопок
+        document.querySelectorAll('.content-type-btn').forEach(btn => {
+            const color = btn.getAttribute('data-color');
+            if (btn.getAttribute('data-type') === type) {
+                btn.classList.remove('btn-outline-' + color);
+                btn.classList.add('btn-' + color);
+                btn.classList.add('active');
+            } else {
+                btn.classList.add('btn-outline-' + color);
+                btn.classList.remove('btn-' + color);
+                btn.classList.remove('active');
+            }
+        });
+
         // Скрываем все поля
         document.querySelectorAll('.content-field').forEach(field => {
             field.style.display = 'none';
         });
+
         // Показываем нужное поле
         document.getElementById(type + '-field').style.display = 'block';
     }
@@ -92,15 +126,35 @@
 </script>
 
 <style>
-    .form-select, .form-control {
+    .form-control {
         transition: all 0.3s ease;
     }
-    .form-select:focus, .form-control:focus {
+    .form-control:focus {
         border-color: #007bff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
     .text-primary:hover {
         text-decoration: underline;
     }
+    .content-type-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 0.5rem 1.5rem;
+    }
+    .content-type-btn:hover {
+        opacity: 0.9;
+    }
+    .content-type-btn.active {
+        color: white !important;
+        font-weight: bold;
+    }
+    .btn-primary { background-color: #007bff; border-color: #007bff; }
+    .btn-outline-primary { border-color: #007bff; color: #007bff; }
+    .btn-warning { background-color: #ff9500; border-color: #ff9500; }
+    .btn-outline-warning { border-color: #ff9500; color: #ff9500; }
+    .btn-success { background-color: #28a745; border-color: #28a745; }
+    .btn-outline-success { border-color: #28a745; color: #28a745; }
+    .btn-info { background-color: #17a2b8; border-color: #17a2b8; }
+    .btn-outline-info { border-color: #17a2b8; color: #17a2b8; }
 </style>
 {% endblock %}

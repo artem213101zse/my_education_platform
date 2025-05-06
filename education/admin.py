@@ -16,7 +16,7 @@ class ModuleAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
 
 class ContentAdmin(admin.ModelAdmin):
-    list_display = ('module', 'content_type', 'short_text')
+    list_display = ('module', 'content_type',  'title', 'short_text')
     list_filter = ('content_type', 'module')
     search_fields = ('text',)
 

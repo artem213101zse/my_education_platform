@@ -2,49 +2,72 @@
 
 {% block content %}
 <div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Курсы</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' module.course.id %}">{{ module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'module_detail' module.id %}">{{ module.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Новый контент</li>
+        </ol>
+    </nav>
     <h1 class="text-dark fw-bold mb-4">Добавить контент в модуль "{{ module.title }}"</h1>
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="content_type" class="form-label text-dark fw-bold">Тип контента</label>
-                <select name="content_type" id="content_type" class="form-select rounded-3" onchange="toggleFields()">
-                    <option value="text">Текст</option>
-                    <option value="video">Видео</option>
-                    <option value="image">Изображение</option>
-                    <option value="file">Файл</option>
-                    <option value="quiz">Тест</option>
-                </select>
+
+            <!-- Выбор типа контента (кнопки) -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Тип контента</h3>
+                <input type="hidden" name="content_type" id="content_type" value="text">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn content-type-btn btn-primary active" data-type="text" data-color="primary" onclick="setContentType('text')">Текст</button>
+                    <button type="button" class="btn content-type-btn btn-outline-warning" data-type="video" data-color="warning" onclick="setContentType('video')">Видео</button>
+                    <button type="button" class="btn content-type-btn btn-outline-success" data-type="image" data-color="success" onclick="setContentType('image')">Изображение</button>
+                    <button type="button" class="btn content-type-btn btn-outline-info" data-type="file" data-color="info" onclick="setContentType('file')">Файл</button>
+                    <button type="button" class="btn content-type-btn btn-outline-danger" data-type="quiz" data-color="danger" onclick="setContentType('quiz')">Тест</button>
+                </div>
             </div>
 
-            <div id="text_field" class="mb-3 content-field">
-                <label for="text" class="form-label text-dark fw-bold">Текст</label>
-                <textarea name="text" id="text" class="form-control rounded-3" rows="5"></textarea>
+            <!-- Поле для заголовка -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Название контента</h3>
+                <input type="text" name="title" class="form-control rounded-3" placeholder="Введите название..." required>
             </div>
 
-            <div id="video_url_field" class="mb-3 content-field" style="display: none;">
-                <label for="video_url" class="form-label text-dark fw-bold">Ссылка на видео</label>
-                <input type="url" name="video_url" id="video_url" class="form-control rounded-3">
-            </div>
+            <!-- Поля редактирования -->
+            <div id="content-fields">
+                <!-- Текст -->
+                <div id="text_field" class="mb-3 content-field">
+                    <label for="text" class="form-label text-dark fw-bold">Текст</label>
+                    <textarea name="text" id="text" class="form-control rounded-3" rows="5"></textarea>
+                </div>
 
-            <div id="video_file_field" class="mb-3 content-field" style="display: none;">
-                <label for="video_file" class="form-label text-dark fw-bold">Или загрузите видео</label>
-                <input type="file" name="video_file" id="video_file" class="form-control rounded-3">
-            </div>
+                <!-- Видео -->
+                <div id="video_url_field" class="mb-3 content-field" style="display: none;">
+                    <label for="video_url" class="form-label text-dark fw-bold">Ссылка на видео</label>
+                    <input type="url" name="video_url" id="video_url" class="form-control rounded-3">
+                </div>
+                <div id="video_file_field" class="mb-3 content-field" style="display: none;">
+                    <label for="video_file" class="form-label text-dark fw-bold">Или загрузите видео</label>
+                    <input type="file" name="video_file" id="video_file" class="form-control rounded-3">
+                </div>
 
-            <div id="image_field" class="mb-3 content-field" style="display: none;">
-                <label for="image" class="form-label text-dark fw-bold">Изображение</label>
-                <input type="file" name="image" id="image" class="form-control rounded-3">
-            </div>
+                <!-- Изображение -->
+                <div id="image_field" class="mb-3 content-field" style="display: none;">
+                    <label for="image" class="form-label text-dark fw-bold">Изображение</label>
+                    <input type="file" name="image" id="image" class="form-control rounded-3">
+                </div>
 
-            <div id="file_field" class="mb-3 content-field" style="display: none;">
-                <label for="file" class="form-label text-dark fw-bold">Файл</label>
-                <input type="file" name="file" id="file" class="form-control rounded-3">
-            </div>
+                <!-- Файл -->
+                <div id="file_field" class="mb-3 content-field" style="display: none;">
+                    <label for="file" class="form-label text-dark fw-bold">Файл</label>
+                    <input type="file" name="file" id="file" class="form-control rounded-3">
+                </div>
 
-            <div id="quiz_field" class="mb-3 content-field" style="display: none;">
-                <label for="title" class="form-label text-dark fw-bold">Название теста</label>
-                <input type="text" name="title" id="title" class="form-control rounded-3">
+                <!-- Тест -->
+                <div id="quiz_field" class="mb-3 content-field" style="display: none;">
+                    <!-- Поле title убрано, так как общее поле выше уже используется -->
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
@@ -59,28 +82,80 @@
 </div>
 
 <script>
-    function toggleFields() {
-        const contentType = document.getElementById('content_type').value;
-        const fields = ['text_field', 'video_url_field', 'video_file_field', 'image_field', 'file_field', 'quiz_field'];
+    function setContentType(type) {
+        // Обновляем скрытое поле
+        document.getElementById('content_type').value = type;
 
-        fields.forEach(field => {
-            document.getElementById(field).style.display = 'none';
+        // Обновляем стили кнопок
+        document.querySelectorAll('.content-type-btn').forEach(btn => {
+            const color = btn.getAttribute('data-color');
+            if (btn.getAttribute('data-type') === type) {
+                btn.classList.remove('btn-outline-' + color);
+                btn.classList.add('btn-' + color);
+                btn.classList.add('active');
+            } else {
+                btn.classList.add('btn-outline-' + color);
+                btn.classList.remove('btn-' + color);
+                btn.classList.remove('active');
+            }
         });
 
-        if (contentType === 'text') {
+        // Скрываем все поля
+        document.querySelectorAll('.content-field').forEach(field => {
+            field.style.display = 'none';
+        });
+
+        // Показываем нужное поле
+        if (type === 'text') {
             document.getElementById('text_field').style.display = 'block';
-        } else if (contentType === 'video') {
+        } else if (type === 'video') {
             document.getElementById('video_url_field').style.display = 'block';
             document.getElementById('video_file_field').style.display = 'block';
-        } else if (contentType === 'image') {
+        } else if (type === 'image') {
             document.getElementById('image_field').style.display = 'block';
-        } else if (contentType === 'file') {
+        } else if (type === 'file') {
             document.getElementById('file_field').style.display = 'block';
-        } else if (contentType === 'quiz') {
+        } else if (type === 'quiz') {
             document.getElementById('quiz_field').style.display = 'block';
         }
     }
 
-    document.addEventListener('DOMContentLoaded', toggleFields);
+    // Инициализация с текстом по умолчанию
+    document.addEventListener('DOMContentLoaded', () => setContentType('text'));
 </script>
+
+<style>
+    .form-control {
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .text-primary:hover {
+        text-decoration: underline;
+    }
+    .content-type-btn {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 0.5rem 1.5rem;
+    }
+    .content-type-btn:hover {
+        opacity: 0.9;
+    }
+    .content-type-btn.active {
+        color: white !important;
+        font-weight: bold;
+    }
+    .btn-primary { background-color: #007bff; border-color: #007bff; }
+    .btn-outline-primary { border-color: #007bff; color: #007bff; }
+    .btn-warning { background-color: #ff9500; border-color: #ff9500; }
+    .btn-outline-warning { border-color: #ff9500; color: #ff9500; }
+    .btn-success { background-color: #28a745; border-color: #28a745; }
+    .btn-outline-success { border-color: #28a745; color: #28a745; }
+    .btn-info { background-color: #17a2b8; border-color: #17a2b8; }
+    .btn-outline-info { border-color: #17a2b8; color: #17a2b8; }
+    .btn-danger { background-color: #dc3545; border-color: #dc3545; }
+    .btn-outline-danger { border-color: #dc3545; color: #dc3545; }
+</style>
 {% endblock %}

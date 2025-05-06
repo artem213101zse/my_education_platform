@@ -41,7 +41,13 @@ class Module(models.Model):
 
 class Content(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='contents', verbose_name='Модуль')
-    content_type = models.CharField(max_length=50, choices=[('text', 'Text'), ('video', 'Video'), ('image', 'Image'), ('file', 'File')], verbose_name='Тип контента')
+    content_type = models.CharField(max_length=50, choices=[
+        ('text', 'Текст'),
+        ('video', 'Видео'),
+        ('image', 'Изображение'),
+        ('file', 'Файл')
+    ], verbose_name='Тип контента')
+    title = models.CharField(max_length=200, blank=True, default='', verbose_name='Название')
     text = models.TextField(blank=True, null=True, verbose_name='Текст')
     video_url = models.URLField(blank=True, null=True, verbose_name='Ссылка на видео')
     video_file = models.FileField(upload_to='content_videos/', blank=True, null=True, verbose_name='Прикрепить видео')

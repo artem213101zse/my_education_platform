@@ -1,8 +1,7 @@
 from locust import HttpUser, task, between
 
-class EducationPlatformUser(HttpUser):
-    # Время ожидания между действиями пользователя (от 1 до 5 секунд)
-    wait_time = between(1, 5)
+class WebsiteUser(HttpUser):
+    wait_time = between(1, 5)  # Пауза между задачами 1-5 секунд
 
     def on_start(self):
         """Выполняется при старте каждого пользователя"""
@@ -21,19 +20,35 @@ class EducationPlatformUser(HttpUser):
             headers={'X-CSRFToken': csrftoken, 'Referer': self.host + '/login/'}
         )
 
+
+    @task(1)
+    def register(self):
+        """Тест: Регистрация нового пользователя"""
+        self.client.get("/signup/")
+        csrftoken = self.client.cookies.get('csrftoken', None)
+        self.client.post(
+            "/signup/",
+            {"username":"teacher", "password1": "newpass123", "password2": "newpass123"},
+            headers={"X-CSRFToken": csrftoken}
+        )
+
     @task(3)
     def view_module(self):
-        """Симуляция просмотра модуля"""
-        self.client.get('/module/1/')  # Предполагаем, что модуль с ID=1 существует
+        """Тест: Просмотр модуля"""
+        self.client.get("/module/1/")
 
     @task(1)
     def create_course(self):
-        """Симуляция попытки создать курс (доступно только учителям, ожидаем 403 для студента)"""
-        response = self.client.get('/course/create/')
-        if 'csrftoken' in response.cookies:
-            csrftoken = response.cookies['csrftoken']
-            self.client.post(
-                '/course/create/',
-                {'title': 'Test Course', 'description': 'Test Description'},
-                headers={'X-CSRFToken': csrftoken, 'Referer': self.host + '/course/create/'}
-            )
+        """Тест: Создание курса (учитель)"""
+        self.teacher_client.get("/course/create/")
+        self.teacher_client.post(
+            "/course/create/",
+            {"title": "New Course", "description": "Course Description"},
+            headers={"X-CSRFToken": self.teacher_csrftoken}
+        )
+
+
+    @task(2)
+    def view_profile(self):
+        """Тест: Просмотр профиля"""
+        self.client.get("/profile/")

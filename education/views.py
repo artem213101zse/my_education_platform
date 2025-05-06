@@ -144,7 +144,7 @@ def module_detail(request, module_id):
 
     combined_items = sorted(
         chain(
-            [{'type': 'content', 'order': content.order, 'content_type': content.content_type, 'text': content.text, 'video_url': content.video_url, 'video_file': content.video_file, 'image': content.image, 'file': content.file, 'id': content.id} for content in contents],
+            [{'type': 'content', 'order': content.order, 'content_type': content.content_type, 'title': content.title, 'text': content.text, 'video_url': content.video_url, 'video_file': content.video_file, 'image': content.image, 'file': content.file, 'id': content.id} for content in contents],
             [{'type': 'quiz', 'order': quiz.order, 'title': quiz.title, 'id': quiz.id, 'questions': quiz.questions} for quiz in quizzes]
         ),
         key=lambda x: x['order']
@@ -159,7 +159,6 @@ def module_detail(request, module_id):
         'student_progress': student_progress,
         'edit_mode': request.session.get('edit_mode', False),
     })
-
 
 @login_required
 def quiz_detail(request, quiz_id, q=0):
@@ -296,9 +295,9 @@ def add_content(request, module_id):
     if request.method == 'POST':
         content_type = request.POST.get('content_type')
         print(f"Content type: {content_type}")  # Для отладки
+        title = request.POST.get('title', '').strip()  # Получаем заголовок один раз для всех типов
 
         if content_type == 'quiz':
-            title = request.POST.get('title', '').strip()
             if not title:
                 messages.error(request, 'Укажите название теста.')
                 return redirect('add_content', module_id=module.id)
@@ -312,11 +311,12 @@ def add_content(request, module_id):
             image = request.FILES.get('image')
             file = request.FILES.get('file')
 
-            print(f"Text: {text}, Video URL: {video_url}, Video File: {video_file}, Image: {image}, File: {file}")  # Для отладки
+            print(f"Text: {text}, Video URL: {video_url}, Video File: {video_file}, Image: {image}, File: {file}, Title: {title}")  # Для отладки
 
             content = Content.objects.create(
                 module=module,
                 content_type=content_type,
+                title=title,  # Сохраняем заголовок для контента
                 text=text,
                 video_url=video_url,
                 video_file=video_file,
@@ -421,7 +421,6 @@ def edit_module(request, module_id):
     if request.method == 'POST':
         module.title = request.POST.get('title')
         module.description = request.POST.get('description')
-        module.order = request.POST.get('order', 0)
         module.save()
         messages.success(request, 'Модуль обновлен!')
         return redirect('course_detail', course_id=module.course.id)
@@ -442,6 +441,7 @@ def edit_content(request, content_id):
     content = get_object_or_404(Content, id=content_id, module__course__teacher=request.user.userprofile)
     if request.method == 'POST':
         content.content_type = request.POST.get('content_type')
+        content.title = request.POST.get('title', '')  # Сохраняем заголовок
         content.text = request.POST.get('text', '')
         content.video_url = request.POST.get('video_url', '')
         content.video_file = request.FILES.get('video_file', content.video_file)
@@ -450,7 +450,7 @@ def edit_content(request, content_id):
         content.save()
         messages.success(request, 'Содержимое обновлено!')
         return redirect('module_detail', module_id=content.module.id)
-    return render(request, 'education/edit_content.html', {'content': content})
+    return render(request, 'education/edit_content.html', {'content': content, 'module': content.module})
 
 @login_required
 @user_passes_test(is_teacher)

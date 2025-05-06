@@ -1,45 +1,60 @@
-
-
-
 {% extends 'education/base.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">Редактирование курса: {{ course.title }}</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <!-- Поле "Название" -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Название</label>
-                            <input type="text" name="title" class="form-control" value="{{ course.title }}" required>
-                        </div>
+<div class="container my-5">
+    <!-- Путь навигации -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Курсы</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' course.id %}">{{ course.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Редактировать курс</li>
+        </ol>
+    </nav>
 
-                        <!-- Поле "Описание" -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Описание</label>
-                            <textarea name="description" class="form-control" rows="5">{{ course.description }}</textarea>
-                        </div>
+    <!-- Заголовок -->
+    <h1 class="text-dark fw-bold mb-4">Редактировать курс: {{ course.title }}</h1>
 
+    <!-- Форма -->
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        <form method="post">
+            {% csrf_token %}
 
-                        <!-- Кнопка "Сохранить" -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
-                                    <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1z"/>
-                                </svg>
-                                Сохранить
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <!-- Поле "Название" -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Название курса</h3>
+                <input type="text" name="title" class="form-control rounded-3" value="{{ course.title }}" placeholder="Введите название..." required>
             </div>
-        </div>
+
+            <!-- Поле "Описание" -->
+            <div class="mb-4">
+                <h3 class="text-dark fw-bold mb-3">Описание курса</h3>
+                <textarea name="description" class="form-control rounded-3" rows="5" placeholder="Введите описание...">{{ course.description }}</textarea>
+            </div>
+
+            <!-- Кнопка "Сохранить" -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save me-2" viewBox="0 0 16 16">
+                        <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 10.5a.5.5 0 0 1-.708 0L4.854 7.354a.5.5 0 1 1 .708-.708L8 9.293V2a2 2 0 0 1 2-2H2zm11 13V4a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1z"/>
+                    </svg>
+                    Сохранить
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<style>
+    .form-control {
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
 {% endblock %}
