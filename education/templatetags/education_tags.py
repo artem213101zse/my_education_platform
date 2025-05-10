@@ -24,3 +24,8 @@ def mul(value, arg):
 @register.filter
 def times(number):
     return range(number)
+
+from django import template
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(str(key))

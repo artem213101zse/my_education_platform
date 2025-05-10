@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Документация - Как пользоваться платформой</title>
+</head>
+<body>
+    {% extends 'education/base.html' %}
+
+    {% block content %}
+    <div class="container my-5">
+        <h1 class="text-dark fw-bold mb-4">Документация: Как пользоваться платформой</h1>
+        <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+            <h2 class="text-dark fw-bold mb-3">1. Регистрация и вход</h2>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Перейдите на главную страницу сайта и нажмите кнопку "Зарегистрироваться".</li>
+                <li class="list-group-item">Заполните форму: укажите имя, email и пароль, затем подтвердите регистрацию по ссылке из письма.</li>
+                <li class="list-group-item">Для входа используйте email и пароль на странице логина.</li>
+            </ul>
+
+            <h2 class="text-dark fw-bold mb-3 mt-4">2. Создание и прохождение курсов</h2>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Если вы учитель: зайдите в раздел "Курсы" → "Создать курс", заполните название и описание, добавьте модули и контент (текст, тесты, задания).</li>
+                <li class="list-group-item">Если вы ученик: выберите курс в разделе "Курсы", нажмите "Записаться" и следуйте модулям, выполняя задания и тесты.</li>
+                <li class="list-group-item">Результаты тестов отображаются сразу после завершения.</li>
+            </ul>
+
+            <h2 class="text-dark fw-bold mb-3 mt-4">3. Просмотр прогресса</h2>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Перейдите в свой профиль (иконка пользователя в верхнем правом углу).</li>
+                <li class="list-group-item">В разделе "Мои курсы" вы увидите процент завершения и список пройденных модулей.</li>
+                <li class="list-group-item">Учителя могут видеть прогресс всех учеников в разделе "Результаты тестов".</li>
+            </ul>
+
+            <h2 class="text-dark fw-bold mb-3 mt-4">4. Получение помощи</h2>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Если возникли вопросы, обратитесь в поддержку через форму в разделе "Помощь" (нижняя часть сайта).</li>
+                <li class="list-group-item">Просмотрите FAQ в документации для типичных проблем (например, сброс пароля).</li>
+                <li class="list-group-item">Для технических проблем свяжитесь с администратором через email: support@myeducationplatform.com.</li>
+            </ul>
+
+            <a href="{% url 'course_list' %}" class="btn btn-secondary rounded-pill px-4 py-2 mt-4">
+                Вернуться к курсам
+            </a>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

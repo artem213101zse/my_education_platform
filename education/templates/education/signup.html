@@ -9,6 +9,17 @@
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mx-auto" style="max-width: 400px;">
         <form method="post">
             {% csrf_token %}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
             <div class="mb-3 position-relative">
                 <label for="id_username" class="form-label text-dark fw-bold">Логин</label>
                 <div class="input-group">
@@ -63,10 +74,6 @@
                     </span>
                     <input type="password" name="password2" id="id_password2" class="form-control rounded-3" required placeholder="Повторите пароль...">
                 </div>
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="is_teacher" id="id_is_teacher" class="form-check-input" {% if form.is_teacher.value %}checked{% endif %}>
-                <label for="id_is_teacher" class="form-check-label text-dark">Зарегистрироваться как учитель</label>
             </div>
             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus me-2" viewBox="0 0 16 16">

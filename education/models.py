@@ -1,22 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Пользователь')
-    is_teacher = models.BooleanField(default=False, verbose_name='Является учителем')
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-
-    def __str__(self):
-        return self.user.username
-
 class Course(models.Model):
     title = models.CharField(max_length=255, verbose_name='Название курса')
     description = models.TextField(verbose_name='Описание курса')
-    teacher = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='taught_courses', verbose_name='Автор курса')
-    students = models.ManyToManyField(UserProfile, related_name='enrolled_courses', blank=True, verbose_name='Ученики курса')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='authored_courses', verbose_name='Автор курса')
+    participants = models.ManyToManyField(User, related_name='enrolled_courses', blank=True, verbose_name='Участники курса')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
 
     class Meta:
@@ -90,8 +79,8 @@ class Question(models.Model):
         return self.text
 
 class QuizResult(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='quiz_results')
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='results')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_results', verbose_name="Пользователь")
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='results', verbose_name="Тест")
     answers = models.JSONField(verbose_name='Ответы')  # Формат: [{"question_id": X, "user_answer": "Y", "is_correct": true}, ...]
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -100,12 +89,12 @@ class QuizResult(models.Model):
         verbose_name_plural = 'Результаты тестов'
 
     def __str__(self):
-        return f"{self.user.user.username} - {self.quiz.title}"
+        return f"{self.user.username} - {self.quiz.title}"
 
 class UserProgress(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='progress')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='progress')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='progress')
     completed_modules = models.ManyToManyField(Module, blank=True)
 
     def __str__(self):
-        return f"{self.user.user.username} - {self.course.title}"
+        return f"{self.user.username} - {self.course.title}"

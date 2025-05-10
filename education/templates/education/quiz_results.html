@@ -75,6 +75,10 @@
         </tr>
     </thead>
     <tbody>
+    <tbody>
+<td>
+    asd
+</td>
         {% for answer in progress.answers %}
         {% for question in questions %}
         {% if question.id == answer.question_id %}
@@ -95,6 +99,8 @@
 </div>
 <a href="{% url 'module_detail' quiz.module.id %}" class="btn btn-secondary rounded-pill px-4 py-2 mt-3">
     Вернуться к модулю
+
+    
 </a>
 {% endif %}
     </div>

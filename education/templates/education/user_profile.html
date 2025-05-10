@@ -16,7 +16,6 @@
                 {% endif %}
                 <p class="text-muted mb-0">Логин: {{ user.username }}</p>
                 <p class="text-muted mb-0">Email: {{ user.email }}</p>
-                <p class="text-muted mb-0">Роль: {% if user.userprofile.is_teacher %}Учитель{% else %}Студент{% endif %}</p>
             </div>
         </div>
     </div>
@@ -39,6 +38,17 @@
         <h5 class="text-dark fw-bold mb-3">Редактировать профиль</h5>
         <form method="post">
             {% csrf_token %}
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
             <div class="mb-3 position-relative">
                 <label for="id_first_name" class="form-label text-dark fw-bold">Имя</label>
                 <div class="input-group">
@@ -60,10 +70,6 @@
                     </span>
                     <input type="email" name="email" id="id_email" class="form-control rounded-3" required placeholder="Введите email..." value="{{ form.email.value|default_if_none:'' }}">
                 </div>
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="is_teacher" id="id_is_teacher" class="form-check-input" {% if form.is_teacher.value %}checked{% endif %}>
-                <label for="id_is_teacher" class="form-check-label text-dark">Я учитель</label>
             </div>
             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
