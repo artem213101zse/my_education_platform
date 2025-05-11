@@ -1,5 +1,24 @@
 {% extends 'education/base.html' %}
-
+{% block documentation_content %}
+<p class="text-muted">Здесь вы найдёте информацию о функциях и действиях на странице "Авторизация".</p>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <strong>Форма авторизации:</strong>
+        <ul>
+            <li><strong>Логин:</strong> Введите ваш логин (обязательное поле).</li>
+            <li><strong>Пароль:</strong> Введите ваш пароль (обязательное поле).</li>
+            <li><strong>Войти:</strong> Нажмите кнопку "Войти", чтобы авторизоваться. После успешного входа вы будете перенаправлены на страницу со списком курсов.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Советы:</strong>
+        <ul>
+            <li>Если вы забыли пароль, обратитесь к администратору платформы для восстановления доступа.</li>
+            <li>Убедитесь, что логин и пароль введены корректно — при ошибке появится уведомление.</li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
 {% block content %}
 <div class="container my-5">
     <!-- Заголовок -->

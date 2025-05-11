@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from education.models import UserProfile, Course, Module
+from education.models import  Course, Module
 
 class UserProfileTests(TestCase):
     def setUp(self):
@@ -10,7 +10,7 @@ class UserProfileTests(TestCase):
 
     def test_create_user_profile(self):
         """Тест: создание профиля пользователя и проверка роли"""
-        profile = UserProfile.objects.create(user=self.user, is_teacher=False)
+        profile = User.objects.create(user=self.user, is_teacher=False)
         self.assertEqual(profile.user.username, "testuser")
         self.assertFalse(profile.is_teacher)
 

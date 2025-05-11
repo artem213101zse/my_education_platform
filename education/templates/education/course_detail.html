@@ -1,5 +1,50 @@
 {% extends 'education/base.html' %}
-
+{% block documentation_content %}
+<p class="text-muted">Здесь вы найдёте информацию о функциях и действиях на странице "Детали курса".</p>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <strong>Основная информация:</strong>
+        <ul>
+            <li><strong>Название курса:</strong> Отображается заголовок курса.</li>
+            <li><strong>Автор:</strong> Указан автор курса (с пометкой "Владелец", если это вы).</li>
+            <li><strong>Описание:</strong> Подробное описание курса.</li>
+            <li><strong>Навигация:</strong> Хлебные крошки позволяют вернуться к списку курсов.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Для неучастников:</strong>
+        <ul>
+            <li><strong>Присоединиться:</strong> Нажмите кнопку "Присоединиться", чтобы записаться на курс (доступно авторизованным пользователям).</li>
+            <li><strong>Модули курса:</strong> Список модулей отображается, но без возможности взаимодействия.</li>
+            <li><strong>Сообщение:</strong> Если вы не авторизованы, появится ссылка на страницу входа.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Для участников:</strong>
+        <ul>
+            <li><strong>Модули курса:</strong> Список модулей с кнопкой "Открыть" для перехода к содержимому.</li>
+            <li><strong>Прогресс:</strong> Показывает ваш прогресс по курсу в процентах.</li>
+            <li><strong>Участники:</strong> Таблица с именами участников и их прогрессом (количество завершённых модулей и процент).</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Для автора курса:</strong>
+        <ul>
+            <li><strong>Режим редактирования:</strong> Переключите режим редактирования, чтобы управлять курсом.</li>
+            <li><strong>Редактировать курс:</strong> Кнопка "Редактировать курс" позволяет изменить название и описание (в режиме редактирования).</li>
+            <li><strong>Новый модуль:</strong> Кнопка "Новый модуль" создаёт новый модуль (в режиме редактирования).</li>
+            <li><strong>Управление модулями:</strong> В режиме редактирования доступны кнопки "Редактировать" и "Удалить" для каждого модуля (с подтверждением удаления).</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Советы:</strong>
+        <ul>
+            <li>Авторам: включайте режим редактирования только для управления курсом, чтобы не отвлекать участников.</li>
+            <li>На мобильных устройствах таблица участников прокручивается горизонтально.</li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
 {% block content %}
 {% load education_tags %}
 
@@ -16,7 +61,7 @@
             <li class="breadcrumb-item active" aria-current="page">{{ course.title }}</li>
         </ol>
     </nav>
-        {% if user.is_authenticated and user.userprofile == course.teacher %}
+        {% if user.is_authenticated and user == course.author %}
         <div class="d-flex align-items-center">
             <label class="switch me-2">
                 <input type="checkbox" id="edit-mode-toggle" {% if edit_mode %}checked{% endif %}>
@@ -35,9 +80,44 @@
         {% endif %}
     </div>
 
-    <h1 class="text-dark fw-bold mb-3">{{ course.title }}</h1>
-    <p class="text-muted mb-4 lead" style="max-width: 800px;">{{ course.description }}</p>
-    {% if user.is_authenticated and user_profile in course.students.all %}
+    <h1 class="text-dark fw-bold mb-3">Курс "{{ course.title }}"</h1>
+<p class="text-muted mb-2">Автор: {{ course.author.first_name|default:course.author }}{% if course.author == request.user %}
+                <span class="badge bg-success mb-2">Владелец</span>
+            {% endif %}</p>
+    <p class="text-muted mb-4 lead" style="max-width: 800px;">Описание: {{ course.description }}</p>
+
+    {% if user not in course.participants.all and  user == course.teacher %}
+    <h3>Присоединитесь к курсу, чтобы начать редактировать его</h3>
+    {% endif %}
+
+
+
+    {% if user not in course.participants.all and  user != course.teacher  %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+                <h3 class="text-dark fw-bold mb-4">Модули курса</h3>
+                {% if not course.modules.all %}
+                <p class="text-muted">Пока нет модулей, но скоро будут!</p>
+                {% else %}
+                <div class="list-group list-group-flush">
+                    {% for module in course.modules.all %}
+                    <div class="list-group-item bg-light rounded-3 mb-3 shadow-sm p-3 d-flex justify-content-between align-items-center flex-wrap">
+                        <span class="text-dark fw-bold">{{ module.title }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            </div>
+        </div>
+
+    {% endif %}
+
+
+
+    {% if user in course.participants.all %}
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
@@ -57,7 +137,7 @@
                                 </svg>
                                 Открыть
                             </a>
-                            {% if user.is_authenticated and user.userprofile == course.teacher and edit_mode %}
+                            {% if user.is_authenticated and user == course.author and edit_mode %}
                             <a href="{% url 'edit_module' module.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
                                     <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
@@ -82,7 +162,9 @@
             {% endif %}
             <div class="d-flex flex-wrap gap-3 mt-4">
                 {% if user.is_authenticated %}
-                    {% if user_profile not in course.students.all %}
+ {% if user not in course.participants.all %}
+                <div class="row">
+                <h4 >Для доступа к курсу необходимо присоединиться:</h4>
                     <a href="{% url 'enroll_course' course.id %}" class="btn btn-primary rounded-pill px-4 py-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
@@ -90,12 +172,12 @@
                         </svg>
                         Присоединиться
                     </a>
+                </div>
                     {% endif %}
                 {% else %}
                     <p class="text-muted">Войдите, чтобы присоединиться: <a href="{% url 'login' %}" class="text-primary fw-bold">Логин</a></p>
                 {% endif %}
-
-                {% if user.is_authenticated and user.userprofile == course.teacher and edit_mode %}
+                {% if user.is_authenticated and user == course.author and edit_mode and user in course.participants.all %}
                 <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-dark rounded-pill px-4 py-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil me-2" viewBox="0 0 16 16">
                         <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
@@ -114,18 +196,19 @@
         </div>
 
         <div class="col-lg-4">
-            {% if user.is_authenticated and user.userprofile in course.students.all %}
+            {% if user.is_authenticated and user in course.participants.all %}
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
-                <h3 class="text-dark fw-bold mb-3">Ваш прогресс</h3>
+                <h3 class="text-dark fw-bold mb-3">Прогресс на курсе</h3>
                 <div class="progress" role="progressbar" aria-label="Course progress" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
                     <div class="progress-bar progress-bar-striped bg-success" style="width: {{ progress_percent|floatformat:0 }}%">{{ progress_percent|floatformat:0 }}%</div>
                 </div>
             </div>
             {% endif %}
 
-            {% if user.is_authenticated and user.userprofile == course.teacher %}
+            {% if user.is_authenticated and  user in course.participants.all  %}
+
             <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
-                <h3 class="text-dark fw-bold mb-3">Студенты</h3>
+                <h3 class="text-dark fw-bold mb-3">Участники курса</h3>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
@@ -135,14 +218,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for student in students %}
+                            {% for student in participants %}
                             <tr>
-                                <td>{{ student.user.username }}</td>
+                                <td>{{ student.first_name }}</td>
                                 <td>
                                     <span class="badge bg-primary rounded-pill">
-                                        {{ students_progress|lookup:student.id|lookup:'completed_modules' }} / {{ students_progress|lookup:student.id|lookup:'total_modules' }}
+                                        {{ participants_progress|lookup:student.id|lookup:'completed_modules' }} / {{ participants_progress|lookup:student.id|lookup:'total_modules' }}
                                     </span>
-                                    ({{ students_progress|lookup:student.id|lookup:'percent'|floatformat:0 }}%)
+                                    ({{ participants_progress|lookup:student.id|lookup:'percent'|floatformat:0 }}%)
                                 </td>
                             </tr>
                             {% endfor %}
@@ -152,24 +235,24 @@
             </div>
             {% endif %}
 
-            {% if user.is_authenticated and user.userprofile in course.students.all %}
-            <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">
-                <h3 class="text-dark fw-bold mb-3">Завершённые модули</h3>
-                <ul class="list-group list-group-flush">
-                    {% if not course.modules.all %}
-                    <li class="list-group-item text-muted">Ещё нет завершённых модулей</li>
-                    {% endif %}
-                    {% for module in course.modules.all %}
-                    <li class="list-group-item bg-transparent border-0 py-2 d-flex justify-content-between align-items-center">
-                        {{ module.title }}
-                        {% if progress.completed_modules.all|lookup:module.id %}
-                        <span class="badge bg-success rounded-pill">✔Nice</span>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+<!--            {% if user.is_authenticated and user in course.participants.all %}-->
+<!--            <div class="card shadow-lg border-0 rounded-4 p-4 bg-white mb-4">-->
+<!--                <h3 class="text-dark fw-bold mb-3">Завершённые модули</h3>-->
+<!--                <ul class="list-group list-group-flush">-->
+<!--                    {% if not course.modules.all %}-->
+<!--                    <li class="list-group-item text-muted">Ещё нет завершённых модулей</li>-->
+<!--                    {% endif %}-->
+<!--                    {% for module in course.modules.all %}-->
+<!--                    <li class="list-group-item bg-transparent border-0 py-2 d-flex justify-content-between align-items-center">-->
+<!--                        {{ module.title }}-->
+<!--                        {% if progress.completed_modules.all|lookup:module.id %}-->
+<!--                        <span class="badge bg-success rounded-pill">✔Nice</span>-->
+<!--                        {% endif %}-->
+<!--                    </li>-->
+<!--                    {% endfor %}-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--            {% endif %}-->
         </div>
     </div>
 </div>

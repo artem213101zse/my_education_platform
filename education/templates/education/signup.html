@@ -1,5 +1,28 @@
 {% extends 'education/base.html' %}
-
+{% block documentation_content %}
+<p class="text-muted">Здесь вы найдёте информацию о функциях и действиях на странице "Регистрация".</p>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <strong>Форма регистрации:</strong>
+        <ul>
+            <li><strong>Логин:</strong> Укажите уникальный логин (обязательное поле).</li>
+            <li><strong>Имя:</strong> Введите ваше имя (обязательное поле).</li>
+            <li><strong>Email:</strong> Укажите действующий email для уведомлений и восстановления доступа (обязательное поле).</li>
+            <li><strong>Пароль:</strong> Создайте пароль (обязательное поле).</li>
+            <li><strong>Подтверждение пароля:</strong> Повторите пароль для подтверждения (обязательное поле).</li>
+            <li><strong>Зарегистрироваться:</strong> Нажмите кнопку "Зарегистрироваться", чтобы создать аккаунт. После успешной регистрации вы будете перенаправлены на страницу входа.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Советы:</strong>
+        <ul>
+            <li>Используйте надёжный пароль (минимум 8 символов, с буквами и цифрами).</li>
+            <li>Убедитесь, что email введён корректно — на него придёт письмо с подтверждением (если включена такая функция).</li>
+            <li>Если произошла ошибка (например, логин занят), форма покажет уведомление с пояснением.</li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
 {% block content %}
 <div class="container my-5">
     <!-- Заголовок -->
@@ -63,10 +86,6 @@
                     </span>
                     <input type="password" name="password2" id="id_password2" class="form-control rounded-3" required placeholder="Повторите пароль...">
                 </div>
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="is_teacher" id="id_is_teacher" class="form-check-input" {% if form.is_teacher.value %}checked{% endif %}>
-                <label for="id_is_teacher" class="form-check-label text-dark">Зарегистрироваться как учитель</label>
             </div>
             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus me-2" viewBox="0 0 16 16">

@@ -1,5 +1,38 @@
 {% extends 'education/base.html' %}
-
+{% block documentation_content %}
+<p class="text-muted">Здесь вы найдёте информацию о функциях и действиях на странице "Мой профиль".</p>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <strong>Информация о пользователе:</strong>
+        <ul>
+            <li><strong>Приветствие:</strong> Отображается ваше имя (если указано) или логин.</li>
+            <li><strong>Логин и Email:</strong> Показывает ваш текущий логин и email.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Статистика:</strong>
+        <ul>
+            <li><strong>Пройдено курсов:</strong> Указывает количество завершённых курсов.</li>
+            <li><strong>Средний прогресс:</strong> Показывает средний прогресс по всем вашим курсам в процентах.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Редактирование профиля:</strong>
+        <ul>
+            <li><strong>Имя:</strong> Введите или измените ваше имя в соответствующем поле.</li>
+            <li><strong>Email:</strong> Обновите ваш email (обязательное поле).</li>
+            <li><strong>Сохранение:</strong> Нажмите кнопку "Сохранить", чтобы применить изменения. После сохранения вы получите уведомление об успехе или ошибке.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Советы:</strong>
+        <ul>
+            <li>Убедитесь, что email указан корректно — он используется для уведомлений.</li>
+            <li>На мобильных устройствах форма адаптируется для удобного ввода.</li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
 {% block content %}
 <div class="container my-5">
     <!-- Заголовок -->
@@ -16,7 +49,6 @@
                 {% endif %}
                 <p class="text-muted mb-0">Логин: {{ user.username }}</p>
                 <p class="text-muted mb-0">Email: {{ user.email }}</p>
-                <p class="text-muted mb-0">Роль: {% if user.userprofile.is_teacher %}Учитель{% else %}Студент{% endif %}</p>
             </div>
         </div>
     </div>
@@ -60,10 +92,6 @@
                     </span>
                     <input type="email" name="email" id="id_email" class="form-control rounded-3" required placeholder="Введите email..." value="{{ form.email.value|default_if_none:'' }}">
                 </div>
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="is_teacher" id="id_is_teacher" class="form-check-input" {% if form.is_teacher.value %}checked{% endif %}>
-                <label for="id_is_teacher" class="form-check-label text-dark">Я учитель</label>
             </div>
             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 w-100">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">

@@ -1,6 +1,43 @@
 {% extends 'education/base.html' %}
-
+{% block documentation_content %}
+<p class="text-muted">Здесь вы найдёте информацию о функциях и действиях на странице "Добавить вопросы".</p>
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">
+        <strong>Основная информация:</strong>
+        <ul>
+            <li><strong>Название теста:</strong> Указано в заголовке, чтобы вы знали, к какому тесту добавляются вопросы.</li>
+            <li><strong>Навигация:</strong> Хлебные крошки позволяют вернуться к списку курсов, деталям курса или модуля.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Форма добавления вопросов:</strong>
+        <ul>
+            <li><strong>Текст вопроса:</strong> Введите текст вопроса (обязательное поле).</li>
+            <li><strong>Правильный ответ:</strong> Укажите правильный ответ (обязательное поле).</li>
+            <li><strong>Добавить ещё вопрос:</strong> Нажмите кнопку "Добавить еще вопрос", чтобы создать дополнительный вопрос.</li>
+            <li><strong>Сохранить:</strong> Нажмите "Сохранить все вопросы", чтобы добавить вопросы в тест. После успешного сохранения вы будете перенаправлены на страницу теста.</li>
+            <li><strong>Назад:</strong> Кнопка "Назад" возвращает на страницу теста без сохранения изменений.</li>
+        </ul>
+    </li>
+    <li class="list-group-item">
+        <strong>Советы:</strong>
+        <ul>
+            <li>Формулируйте вопросы чётко и понятно для участников.</li>
+            <li>Убедитесь, что правильный ответ указан корректно.</li>
+            <li>Если поле "Текст вопроса" пустое, форма не отправится, и вы получите уведомление.</li>
+        </ul>
+    </li>
+</ul>
+{% endblock %}
 {% block content %}
+<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'course_list' %}">Курсы</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'course_detail' quiz.module.course.id %}">{{ quiz.module.course.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'module_detail' quiz.module.id %}">{{ quiz.module.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ quiz.title }}</li>
+        </ol>
+    </nav>
 <div class="container my-5">
     <h1 class="text-dark fw-bold mb-4">Добавить вопросы в тест "{{ quiz.title }}"</h1>
     <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
@@ -18,8 +55,8 @@
                     </div>
                 </div>
             </div>
-            <button type="button" id="addQuestionBtn" class="btn btn-primary rounded-pill px-4 py-2">Добавить новый вопрос</button>
-            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">Сохранить все вопросы</button>
+            <button type="button" id="addQuestionBtn" class="btn btn-primary rounded-pill px-4 py-2">Добавить еще вопрос</button>
+            <button type="submit" class="btn btn-success rounded-pill px-4 py-2">Сохранить все вопросы</button>
             <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-secondary rounded-pill px-4 py-2">Назад</a>
         </form>
     </div>

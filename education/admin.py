@@ -1,13 +1,10 @@
 from django.contrib import admin
-from .models import UserProfile, Course, Module, Content, Quiz, Question
+from .models import Course, Module, Content, Quiz, Question, UserProgress
 
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_teacher')
-    search_fields = ('user__username',)
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'teacher', 'created_at')
-    list_filter = ('created_at', 'teacher')
+    list_display = ('title', 'author', 'created_at')
+    list_filter = ('created_at', 'author')
     search_fields = ('title', 'description')
 
 class ModuleAdmin(admin.ModelAdmin):
@@ -38,7 +35,6 @@ class AnswerAdmin(admin.ModelAdmin):
     list_filter = ('question', 'is_correct')
     search_fields = ('text',)
 
-admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Module, ModuleAdmin)
 admin.site.register(Content, ContentAdmin)

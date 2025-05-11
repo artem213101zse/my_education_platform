@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
-from .models import Course, Module, UserProfile, Content, UserProgress, Quiz, Question, QuizResult
+from .models import Course, Module, Content, UserProgress, Quiz, Question, QuizResult
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, authenticate
 from .forms import SignUpForm, UserProfileForm, QuizForm, QuestionForm
@@ -20,14 +21,13 @@ def course_list(request):
     completed_modules_data = {}
     total_modules_data = {}
     last_course = None
-
-    if request.user.is_authenticated:
-        user_profile = UserProfile.objects.get(user=request.user)
+    user = request.user
+    if user.is_authenticated:
         for course in courses:
             total_modules = course.modules.count()
-            if user_profile in course.students.all():
+            if user in course.participants.all():
                 my_courses.append(course)
-                progress, created = UserProgress.objects.get_or_create(user=user_profile, course=course)
+                progress, created = UserProgress.objects.get_or_create(user=user, course=course)
                 completed_modules = progress.completed_modules.count()
                 progress_percent = (completed_modules / total_modules * 100) if total_modules > 0 else 0
                 progress_data[course.id] = progress_percent
@@ -37,7 +37,7 @@ def course_list(request):
                 all_courses.append(course)
 
         if my_courses:
-            last_progress = UserProgress.objects.filter(user=user_profile).order_by('-id').first()
+            last_progress = UserProgress.objects.filter(user=user).order_by('-id').first()
             if last_progress:
                 last_course = last_progress.course
                 last_course.progress_percent = progress_data.get(last_course.id, 0)
@@ -58,20 +58,18 @@ def course_list(request):
 @login_required
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
-    user_profile = None
     progress_percent = 0
     students_progress = {}
     edit_mode = request.session.get('edit_mode', False)
 
     if request.user.is_authenticated:
-        user_profile = UserProfile.objects.get(user=request.user)
-        progress, created = UserProgress.objects.get_or_create(user=user_profile, course=course)
+        progress, created = UserProgress.objects.get_or_create(user=request.user, course=course)
         total_modules = course.modules.count()
         completed_modules = progress.completed_modules.count()
         progress_percent = (completed_modules / total_modules * 100) if total_modules > 0 else 0
 
-        students = course.students.all()
-        for student in students:
+        participants = course.participants.all()
+        for student in participants:
             student_progress, _ = UserProgress.objects.get_or_create(user=student, course=course)
             student_completed = student_progress.completed_modules.count()
             students_progress[student.id] = {
@@ -84,13 +82,13 @@ def course_detail(request, course_id):
         'course': course,
         'user_profile': user_profile,
         'progress_percent': progress_percent,
-        'students': students,
-        'students_progress': students_progress,
+        'participants': participants,
+        'participants_progress': students_progress,
         'edit_mode': edit_mode,
     })
 
 def is_teacher(user):
-    return user.userprofile.is_teacher
+    return user.author
 
 @login_required
 def module_detail(request, module_id):
@@ -99,8 +97,8 @@ def module_detail(request, module_id):
     quizzes = Quiz.objects.filter(module=module)
 
     try:
-        user_profile = UserProfile.objects.get(user=request.user)
-    except UserProfile.DoesNotExist:
+        user_profile = user=request.user
+    except User.DoesNotExist:
         user_profile = None
 
     # Проверяем, прошёл ли пользователь тест
@@ -130,28 +128,16 @@ def quiz_detail(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     questions = quiz.questions.all()
     total_questions = questions.count()
-    user_profile = request.user.userprofile
-
+    user_profile = request.user
     # Проверяем, прошёл ли пользователь тест
     quiz_result = QuizResult.objects.filter(user=user_profile, quiz=quiz).first()
     if quiz_result:
         return redirect('quiz_results', quiz_id=quiz.id)
-
-    # Для учителя в режиме редактирования
-    if user_profile.is_teacher and request.session.get('edit_mode', False):
-        return render(request, 'education/quiz_detail.html', {
-            'quiz': quiz,
-            'questions': questions,
-            'total_questions': total_questions,
-            'is_teacher': True,
-        })
-
-    # Разрешаем прохождение теста для всех пользователей (включая учителя вне режима редактирования)
+    # Разрешаем прохождение теста для всех пользователей
     if request.method == 'POST':
         if not questions:
             messages.error(request, 'В этом тесте нет вопросов.')
             return redirect('module_detail', module_id=quiz.module.id)
-
         # Собираем ответы
         answers = []
         for question in questions:
@@ -171,23 +157,22 @@ def quiz_detail(request, quiz_id):
         )
         messages.success(request, 'Тест завершён! Посмотрите свои результаты.')
         return redirect('quiz_results', quiz_id=quiz.id)
-
     return render(request, 'education/quiz_detail.html', {
         'quiz': quiz,
         'questions': questions,
         'total_questions': total_questions,
-        'is_teacher': user_profile.is_teacher,
+        'is_teacher': user_profile == quiz.module.course.author,
     })
 
 
 @login_required
 def quiz_results(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
-    user_profile = request.user.userprofile
+    user_profile = request.user
     questions = quiz.questions.all()
     total_questions = questions.count()
 
-    if user_profile.is_teacher:
+    if user_profile == quiz.module.course.author:
         # Для учителя: показываем результаты всех пользователей, включая самого учителя
         results = QuizResult.objects.filter(quiz=quiz)
         all_results = []
@@ -229,19 +214,20 @@ def quiz_results(request, quiz_id):
         })
 
 @login_required
-@user_passes_test(is_teacher)
 def reset_quiz(request, quiz_id, user_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id, module__course__teacher=request.user.userprofile)
-    user = get_object_or_404(UserProfile, id=user_id)
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    user = get_object_or_404(User, id=user_id)
+    if request.user != quiz.module.course.author:
+        messages.error(request, 'Только автор курса может сбросить результаты.')
+        return redirect('quiz_results', quiz_id=quiz.id)
     if request.method == 'POST':
         QuizResult.objects.filter(quiz=quiz, user=user).delete()
-        messages.success(request, f'Результаты теста для {user.user.username} сброшены!')
+        messages.success(request, f'Результаты теста для {user.username} сброшены!')
     return redirect('quiz_results', quiz_id=quiz.id)
 
 @login_required
-@user_passes_test(is_teacher)
 def add_content(request, module_id):
-    module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
+    module = get_object_or_404(Module, id=module_id, course__author=request.user)
     if request.method == 'POST':
         content_type = request.POST.get('content_type')
         title = request.POST.get('title', '').strip()
@@ -280,8 +266,6 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            is_teacher = form.cleaned_data.get('is_teacher')
-            UserProfile.objects.create(user=user, is_teacher=is_teacher)
             login(request, user)
             messages.success(request, 'Регистрация прошла успешно! Добро пожаловать!')
             return redirect('course_list')
@@ -307,31 +291,29 @@ def user_login(request):
 
 @login_required
 def enroll_course(request, course_id):
+    user_profile = request.user
     course = get_object_or_404(Course, id=course_id)
-    user_profile = UserProfile.objects.get(user=request.user)
-    if user_profile not in course.students.all():
-        course.students.add(user_profile)
+    if user_profile not in course.participants.all():
+        course.participants.add(user_profile)
         messages.success(request, 'Вы просоединились к курсу.')
     else:
         messages.warning(request, 'Вы уже находитесь на этом курсе.')
     return redirect('course_detail', course_id=course.id)
 
 @login_required
-@user_passes_test(is_teacher)
 def create_course(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description')
-        teacher = request.user.userprofile
-        course = Course.objects.create(title=title, description=description, teacher=teacher)
+        author = request.user
+        course = Course.objects.create(title=title, description=description, author=author)
         messages.success(request, 'Курс создан!')
         return redirect('course_detail', course_id=course.id)
     return render(request, 'education/create_course.html')
 
 @login_required
-@user_passes_test(is_teacher)
 def edit_course(request, course_id):
-    course = get_object_or_404(Course, id=course_id, teacher=request.user.userprofile)
+    course = get_object_or_404(Course, id=course_id, author=request.user)
     if request.method == 'POST':
         course.title = request.POST.get('title')
         course.description = request.POST.get('description')
@@ -341,9 +323,9 @@ def edit_course(request, course_id):
     return render(request, 'education/edit_course.html', {'course': course})
 
 @login_required
-@user_passes_test(is_teacher)
+
 def add_module(request, course_id):
-    course = get_object_or_404(Course, id=course_id, teacher=request.user.userprofile)
+    course = get_object_or_404(Course, id=course_id, author=request.user)
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description')
@@ -355,16 +337,15 @@ def add_module(request, course_id):
 @login_required
 def complete_module(request, module_id):
     module = get_object_or_404(Module, id=module_id)
-    user_profile = request.user.userprofile
+    user_profile = request.user
     progress, created = UserProgress.objects.get_or_create(user=user_profile, course=module.course)
     progress.completed_modules.add(module)
     messages.success(request, f'Модуль "{module.title}" завершен!')
     return redirect('module_detail', module_id=module.id)
 
 @login_required
-@user_passes_test(is_teacher)
 def edit_module(request, module_id):
-    module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
+    module = get_object_or_404(Module, id=module_id, course__author=request.user)
     if request.method == 'POST':
         module.title = request.POST.get('title')
         module.description = request.POST.get('description')
@@ -374,18 +355,18 @@ def edit_module(request, module_id):
     return render(request, 'education/edit_module.html', {'module': module})
 
 @login_required
-@user_passes_test(is_teacher)
+
 def delete_module(request, module_id):
-    module = get_object_or_404(Module, id=module_id, course__teacher=request.user.userprofile)
+    module = get_object_or_404(Module, id=module_id, course__author=request.user)
     course_id = module.course.id
     module.delete()
     messages.success(request, 'Модуль удалён!')
     return redirect('course_detail', course_id=course_id)
 
 @login_required
-@user_passes_test(is_teacher)
+
 def edit_content(request, content_id):
-    content = get_object_or_404(Content, id=content_id, module__course__teacher=request.user.userprofile)
+    content = get_object_or_404(Content, id=content_id, module__course__author=request.user)
     if request.method == 'POST':
         content.content_type = request.POST.get('content_type')
         content.title = request.POST.get('title', '')
@@ -399,17 +380,17 @@ def edit_content(request, content_id):
         return redirect('module_detail', module_id=content.module.id)
     return render(request, 'education/edit_content.html', {'content': content, 'module': content.module})
 
+
 @login_required
-@user_passes_test(is_teacher)
 def delete_content(request, content_id):
-    content = get_object_or_404(Content, id=content_id, module__course__teacher=request.user.userprofile)
+    content = get_object_or_404(Content, id=content_id, module__course__author=request.user)
     module_id = content.module.id
     content.delete()
     messages.success(request, 'Содержимое успешно удалено!')
     return redirect('module_detail', module_id=module_id)
 
 @login_required
-@user_passes_test(is_teacher)
+
 def toggle_edit_mode(request):
     edit_mode = request.session.get('edit_mode', False)
     request.session['edit_mode'] = not edit_mode
@@ -418,13 +399,12 @@ def toggle_edit_mode(request):
 @login_required
 def user_profile(request):
     user = request.user
-    user_profile = user.userprofile
-    enrolled_courses = Course.objects.filter(students=user_profile)
+    enrolled_courses = Course.objects.filter(participants=user)
     total_courses = enrolled_courses.count()
     total_progress = 0
     if total_courses > 0:
         for course in enrolled_courses:
-            progress, _ = UserProgress.objects.get_or_create(user=user_profile, course=course)
+            progress, _ = UserProgress.objects.get_or_create(user=user, course=course)
             total_modules = course.modules.count()
             completed_modules = progress.completed_modules.count()
             progress_percent = (completed_modules / total_modules * 100) if total_modules > 0 else 0
@@ -437,8 +417,6 @@ def user_profile(request):
         form = UserProfileForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            user_profile.is_teacher = form.cleaned_data['is_teacher']
-            user_profile.save()
             messages.success(request, 'Профиль успешно обновлён!')
             return redirect('user_profile')
         else:
@@ -446,7 +424,7 @@ def user_profile(request):
                 for error in errors:
                     messages.error(request, f"{form.fields[field].label}: {error}")
     else:
-        form = UserProfileForm(instance=user, initial={'is_teacher': user_profile.is_teacher})
+        form = UserProfileForm(instance=user)
 
     return render(request, 'education/user_profile.html', {
         'form': form,
@@ -455,10 +433,10 @@ def user_profile(request):
     })
 
 @login_required
-@user_passes_test(is_teacher)
+
 def delete_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
-    if request.user.userprofile != quiz.module.course.teacher:
+    if request.user != quiz.module.course.author:
         return redirect('module_detail', module_id=quiz.module.id)
 
     module_id = quiz.module.id
@@ -466,9 +444,8 @@ def delete_quiz(request, quiz_id):
     return redirect('module_detail', module_id=module_id)
 
 @login_required
-@user_passes_test(is_teacher)
 def add_question(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id, module__course__teacher=request.user.userprofile)
+    quiz = get_object_or_404(Quiz, id=quiz_id, module__course__author=request.user)
 
     if request.method == 'POST':
         question_count = 0
@@ -482,7 +459,6 @@ def add_question(request, quiz_id):
                     text=text,
                     correct_answer=correct_answer,
                 )
-                messages.success(request, f'Вопрос {question_count + 1} добавлен успешно!')
             question_count += 1
 
         if question_count == 0:
@@ -494,10 +470,10 @@ def add_question(request, quiz_id):
     return render(request, 'education/add_question.html', {'quiz': quiz})
 
 @login_required
-@user_passes_test(is_teacher)
+
 def quiz_user_answers(request, quiz_id, user_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id, module__course__teacher=request.user.userprofile)
-    user = get_object_or_404(UserProfile, id=user_id)
+    quiz = get_object_or_404(Quiz, id=quiz_id, module__course__author=request.user)
+    user = get_object_or_404(User, id=user_id)
     result = get_object_or_404(QuizResult, quiz=quiz, user=user)
     questions = quiz.questions.all()
     total_questions = questions.count()

@@ -6,11 +6,10 @@ from education.models import Quiz, Question
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, label="Имя")
     email = forms.EmailField(max_length=254, required=True, label="Email")
-    is_teacher = forms.BooleanField(required=False, label="Зарегистрироваться как учитель")
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'email', 'password1', 'password2', 'is_teacher')
+        fields = ('username', 'first_name', 'email', 'password1', 'password2')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -21,11 +20,10 @@ class SignUpForm(UserCreationForm):
         return cleaned_data
 
 class UserProfileForm(forms.ModelForm):
-    is_teacher = forms.BooleanField(required=False, label="Я учитель")
 
     class Meta:
         model = User
-        fields = ('first_name', 'email', 'is_teacher')
+        fields = ('first_name', 'email')
 
 class QuizForm(forms.ModelForm):
     class Meta:

@@ -127,11 +127,40 @@
             font-size: 0.9rem;
         }
     }
+        /* Дополнительные стили для навигации и документации */
+.navbar {
+    min-height: 60px; /* Фиксированная минимальная высота навигации */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.documentation-section {
+    margin-top: 0 !important; /* Убираем лишний отступ сверху при открытии */
+}
+
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    .navbar-brand img, .navbar-brand svg {
+        width: 20px;
+        height: 20px;
+    }
+    .open-doc {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+    }
+    .open-doc svg {
+        width: 16px;
+        height: 16px;
+    }
+}
 </style>
 </head>
 <body>
-    <!-- Навигация -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
     <div class="container">
         <a class="navbar-brand" href="{% url 'course_list' %}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-book me-2" viewBox="0 0 16 16">
@@ -139,14 +168,21 @@
             </svg>
             Education Platform
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+
+        <!-- Кнопка помощи всегда видна -->
+        <button class="btn btn-outline-info p-1 open-doc" style="margin-left: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+            </svg>
+        </button>
+
+        <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarsExample07">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            </ul>
-
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     {% if user.is_authenticated %}
                         <a href="{% url 'user_profile' %}" class="btn btn-primary rounded-pill mx-1">
@@ -187,6 +223,20 @@
     <!-- Основной контент -->
     <div class="container">
         <header class="my-4"></header>
+        <!-- Блок документации -->
+<div class="container my-5 documentation-section" style="display: none;">
+    <div class="card shadow-lg border-0 rounded-4 p-4 bg-white">
+        <h3 class="text-dark fw-bold mb-4">Документация</h3>
+        <div>
+            {% block documentation_content %}
+            <!-- Документация будет переопределяться в дочерних шаблонах -->
+            {% endblock %}
+        </div>
+        <button class="btn btn-outline-secondary rounded-pill px-4 py-2 mt-3 close-doc" style="display: none;">
+            Закрыть документацию
+        </button>
+    </div>
+</div>
         <main>
 
             {% block content %}
@@ -251,5 +301,22 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
+    // Показать/скрыть документацию
+    document.querySelector('.open-doc').addEventListener('click', function() {
+        document.querySelector('.documentation-section').style.display = 'block';
+        this.style.display = 'none';
+        document.querySelector('.close-doc').style.display = 'block';
+    });
+
+    document.querySelector('.close-doc').addEventListener('click', function() {
+        document.querySelector('.documentation-section').style.display = 'none';
+        document.querySelector('.open-doc').style.display = 'block';
+        this.style.display = 'none';
+    });
+</script>
+</body>
 </body>
 </html>
